@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Post</title>
+  <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+
+<nav class="main-navbar">
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="blog.html">Blog</a></li>
+  </ul>
+</nav>
+
+<div class="post-container">
+  <h1 id="post-title">Loading...</h1>
+  <p id="post-date"></p>
+  <img id="post-image" class="cover-img" src="" alt="Cover Image">
+  <p id="post-content"></p>
+  <p>👁 Views: <span id="post-views"></span></p>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const blogId = urlParams.get("id");
+
+    if (!blogId) {
+      document.getElementById("post-title").textContent = "Post Not Found";
+      return;
+    }
+
+    const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`);
+    const blog = await response.json();
+
+    document.getElementById("post-title").textContent = blog.title;
+    document.getElementById("post-date").textContent = `Published on ${new Date(blog.createdAt).toDateString()}`;
+    document.getElementById("post-image").src = blog.coverImage;
+    document.getElementById("post-content").textContent = blog.content;
+    document.getElementById("post-views").textContent = blog.views;
+  });
+</script>
+
+</body>
+</html>

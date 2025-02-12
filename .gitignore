@@ -1,0 +1,18 @@
+# Ignore node_modules (will be installed via npm install)
+node_modules/
+
+# Ignore VSCode settings
+.vscode/
+
+# Ignore environment variables
+.env
+
+# Ignore logs and temporary files
+*.log
+.cache/
+tmp/
+uploads/  # Unless you need to commit placeholder images
+
+# OS-specific files
+.DS_Store
+Thumbs.db
