@@ -1,5 +1,5 @@
 #example1 {
-  background-image: url('images/programmer.png');
+  background-image: url('/images/programmer.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

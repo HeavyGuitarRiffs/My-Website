@@ -41,3 +41,5 @@ app.get("/api/test", (req, res) => {
 
 // ✅ **Start Server**
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+app.use(express.static(path.join(__dirname, "public")));
