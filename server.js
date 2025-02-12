@@ -17,9 +17,11 @@ app.use(cors()); // Enable cross-origin requests
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded images
 
 // ** Connect to MongoDB Using Env Variable **
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
+require("dotenv").config();
+const mongoose = require("mongoose");
+
+mongoose.connect(process.env.MONGO_URI + "?tls=true", {
+    serverSelectionTimeoutMS: 5000 // Timeout after 5 seconds if no connection
 })
-.then(() => console.log("✅ MongoDB Connected"))
+.then(() => console.log("✅ MongoDB Connected Successfully"))
 .catch(err => console.log("❌ MongoDB Connection Error:", err));
