@@ -50,33 +50,37 @@
   transform: scale(1.1);
 }
 
-p {
-  font-family: "Monaco", Times, monospace;
+p, h1, h2, h3, ul, li {
   text-align: center;
-  font-size: 28px;
 }
 
 h1 {
-  text-align: center;
   font-size: 72px;
 }
 
 h2 {
-  text-align: center;
   font-size: 30px;
 }
 
 h3 {
-  text-align: center;
   font-size: 20px;
 }
 
 ul, li {
-  text-align: center;
   font-size: 30px;
 }
 
-/* Center and Responsive Design */
+/* Centering and Responsive Design */
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
 figure {
   display: flex;
   flex-direction: column;
@@ -107,121 +111,10 @@ td img {
   object-fit: cover;
 }
 
-/* General Styles */
-body {
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  min-height: 100vh;
-  padding: 20px;
-}
-
-/* 🔹 Social Media Footer */
-.social-footer {
-  position: relative;
-  bottom: 0;
-  width: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  padding: 15px 0;
-  text-align: center;
-}
-
-.social-footer ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-.social-footer ul li {
-  display: inline-block;
-}
-
-.social-footer ul li a {
-  text-decoration: none;
-  color: white;
-  font-size: 24px;
-  transition: all 0.3s ease-in-out;
-}
-
-.social-footer ul li a:hover {
-  color: #ffcc00;
-  transform: scale(1.2);
-}
-
-.social-footer p {
-  color: white;
-  font-size: 14px;
-  margin-top: 10px;
-}
-
-.main-navbar ul li a {
-  position: relative;
-  text-decoration: none;
-  padding: 10px 15px;
-}
-
-.main-navbar ul li a::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 0;
-  height: 3px;
-  background: #1cbd54;
-  transition: width 0.3s ease, left 0.3s ease;
-}
-
-.main-navbar ul li a:hover::after {
-  width: 100%;
-  left: 0;
-}
-
-/* 🌟 Slide-in Animation */
-.page-content {
-  opacity: 0;
-  transform: translateY(50px);
-  animation: slideIn 0.6s ease-out forwards;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-nav ul li {
-  opacity: 0;
-  transform: translateX(-50px);
-  animation: slideInNav 0.6s ease-out forwards;
-  animation-delay: 0.2s;
-}
-
-@keyframes slideInNav {
-  from {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
 /* Blog Container */
 .blog-container {
   max-width: 800px;
+  width: 90%;
   margin: 100px auto 20px auto;
   padding: 20px;
   background: rgba(0, 0, 0, 0.7);
