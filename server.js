@@ -17,24 +17,23 @@ mongoose.connect(`${process.env.MONGO_URI}?tls=true`, {
 .then(() => console.log("✅ MongoDB Connected Successfully"))
 .catch(err => console.log("❌ MongoDB Connection Error:", err));
 
+// ✅ **Middleware**
+app.use(express.json()); // Parse JSON requests
+app.use(cors()); // Enable cross-origin requests
+app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded images
+
 // ✅ **Serve Static Files (Frontend)**
 app.use(express.static(path.join(__dirname, "public"))); // Serve static files from "public" directory
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// ✅ **Middleware**
-app.use(express.json()); // Parse JSON requests
-app.use(cors()); // Enable cross-origin requests
-app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded images
-
-// ✅ **API Routes (Add Your API Endpoints Below)**
-// Example API Route (modify this based on your project)
+// ✅ **API Routes (Define Your API Endpoints Below)**
 app.get("/api/test", (req, res) => {
     res.json({ message: "API is working!" });
 });
 
-// Add your other API routes here...
+// Add more API routes here as needed...
 
 // ✅ **Start the Server**
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
