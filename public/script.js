@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     setupPageTransitions();
-    loadBlogs(); // ✅ Load blogs from API on page load
+    loadBlogs(); // ✅ Load blogs on page load
 });
 
 /* 🌟 1. Page Transitions (Fade-out Effect) */
@@ -12,7 +12,6 @@ function setupPageTransitions() {
             if (this.href.includes(location.hostname)) { // Prevent external links
                 event.preventDefault();
                 
-                // Apply fade-out class (defined in styles.css)
                 pageContent.classList.add("fade-out");
 
                 setTimeout(() => {
@@ -24,11 +23,11 @@ function setupPageTransitions() {
 }
 
 /* 🌟 2. Blog API Integration */
-const API_URL = "http://localhost:5000/api/blogs"; // ✅ Update to use your actual backend URL
+const API_URL = "http://localhost:5000/api/blogs"; // ✅ Ensure this is your actual backend URL
 
-// ✅ Save Blog Post (Handles Image Upload)
+// ✅ Save Blog Post (Handles Image Upload & Refreshes Automatically)
 document.getElementById("blogForm").addEventListener("submit", async (event) => {
-    event.preventDefault(); // Prevent form from refreshing page
+    event.preventDefault(); // Prevent form from refreshing
 
     const title = document.getElementById("blogTitle").value.trim();
     const content = document.getElementById("blogContent").value.trim();
@@ -58,6 +57,7 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
 
         alert("✅ Blog post saved!");
         document.getElementById("blogForm").reset();
+        
         loadBlogs(); // ✅ Reload blog list after saving a new post
     } catch (error) {
         console.error("❌ Error saving blog post:", error);
@@ -65,9 +65,9 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
     }
 });
 
-// ✅ Load Blog Posts (Now Fetches from API)
+// ✅ Load Blog Posts (Now Fetches from API & Displays Correct Thumbnails)
 async function loadBlogs() {
-    const blogPostsDiv = document.getElementById("blog-list"); // ✅ Ensure this ID exists in `blog.html`
+    const blogPostsDiv = document.getElementById("blog-list");
     if (!blogPostsDiv) {
         console.error("❌ ERROR: blog-list not found in the HTML!");
         return;
@@ -92,7 +92,13 @@ async function loadBlogs() {
             postDiv.classList.add("blog-item");
 
             // ✅ Fix: Ensure correct image path
-            let imageHtml = blog.imageUrl ? `<img src="http://localhost:5000${blog.imageUrl}" class="cover-img" alt="Blog Image">` : "<p>No Image</p>";
+            let imageUrl = blog.imageUrl.startsWith("/uploads/")
+                ? `http://localhost:5000${blog.imageUrl}`
+                : blog.imageUrl;
+
+            let imageHtml = blog.imageUrl
+                ? `<img src="${imageUrl}" class="cover-img" alt="Blog Image" onerror="this.onerror=null;this.src='/default-thumbnail.png';">`
+                : "<p>No Image</p>";
 
             postDiv.innerHTML = `
                 <h3>${blog.title}</h3>
@@ -111,7 +117,7 @@ async function loadBlogs() {
     }
 }
 
-// ✅ Delete Blog Post (Sends DELETE Request)
+// ✅ Delete Blog Post (Sends DELETE Request & Refreshes)
 async function deletePost(id) {
     if (!confirm("⚠ Are you sure you want to delete this post?")) return;
 
@@ -130,7 +136,7 @@ async function deletePost(id) {
     }
 }
 
-// ✅ Edit Blog Post (Sends PUT Request)
+// ✅ Edit Blog Post (Sends PUT Request & Refreshes)
 async function editPost(id) {
     const newTitle = prompt("Enter new title:");
     const newContent = prompt("Enter new content:");
