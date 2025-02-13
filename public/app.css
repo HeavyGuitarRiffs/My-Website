@@ -428,3 +428,9 @@ body {
       font-size: 18px;
   }
 }
+
+textarea, input {
+  color: black !important;
+  visibility: visible !important;
+}
+
