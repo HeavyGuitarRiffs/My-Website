@@ -221,19 +221,49 @@
         });
 
         async function loadBlogs() {
-            const response = await fetch(API_URL);
-            const blogs = await response.json();
-            document.getElementById("blog-list").innerHTML = blogs.map(blog => `
-                <div class="blog-item">
-                    <h3>${blog.title}</h3>
-                    <p><strong>By:</strong> ${blog.author}</p>
-                    <img src="${blog.imageUrl}" class="cover-img" alt="Blog Image">
-                    <p>${blog.content}</p>
-                </div>
-            `).join("");
+    const blogPostsDiv = document.getElementById("blog-list"); // ✅ Correct ID
+    if (!blogPostsDiv) {
+        console.error("❌ ERROR: blog-list not found in the HTML!");
+        return;
+    }
+
+    blogPostsDiv.innerHTML = "<p>Loading...</p>";
+
+    try {
+        const response = await fetch("http://localhost:5000/api/blogs");
+        if (!response.ok) throw new Error("Failed to fetch blog posts.");
+
+        const blogs = await response.json();
+
+        if (blogs.length === 0) {
+            blogPostsDiv.innerHTML = "<p>No blog posts found.</p>";
+            return;
         }
 
-        loadBlogs();
+        blogPostsDiv.innerHTML = "";
+        blogs.forEach(blog => {
+            let postDiv = document.createElement("div");
+            postDiv.classList.add("blog-item");
+
+            // ✅ Fix image path
+            let imageHtml = blog.imageUrl ? `<img src="${blog.imageUrl}" class="cover-img" alt="Blog Image">` : "";
+
+            postDiv.innerHTML = `
+                <h3>${blog.title}</h3>
+                <p><strong>By:</strong> ${blog.author}</p>
+                ${imageHtml}
+                <p>${blog.content}</p>
+                <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads || 0}</p>
+                <button onclick="deletePost('${blog._id}')">🗑 Delete</button>
+            `;
+            blogPostsDiv.appendChild(postDiv);
+        });
+    } catch (error) {
+        console.error("❌ Error fetching blogs:", error);
+        blogPostsDiv.innerHTML = "<p>Error loading blog posts.</p>";
+    }
+}
+
     </script>
 </body>
 </html>

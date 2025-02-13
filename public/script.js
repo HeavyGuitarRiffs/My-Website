@@ -94,7 +94,8 @@ async function loadBlogs() {
             postDiv.classList.add("blog-item");
 
             // ✅ Fix: Ensure correct image path
-            let imageHtml = blog.imageUrl ? `<img src="https://thorough-radiance-production.up.railway.app${blog.imageUrl}" class="cover-img" alt="Blog Image">` : "";
+            let imageHtml = blog.imageUrl ? `<img src="${blog.imageUrl}" class="cover-img" alt="Blog Image">` : "";
+
 
             postDiv.innerHTML = `
                 <h3>${blog.title}</h3>
