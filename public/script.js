@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     setupPageTransitions();
-    fetchBlogs(); // Load blogs from API on page load
+    loadBlogs(); // ✅ Load blogs from API on page load
 });
 
 /* 🌟 1. Page Transitions (Fade-out Effect) */
@@ -60,7 +60,7 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
 
         alert("✅ Blog post saved!");
         document.getElementById("blogForm").reset();
-        fetchBlogs(); // ✅ Reload blog list after saving a new post
+        loadBlogs(); // ✅ Reload blog list after saving a new post
     } catch (error) {
         console.error("❌ Error saving blog post:", error);
         alert("❌ Failed to save blog post.");
@@ -68,17 +68,17 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
 });
 
 // ✅ Load Blog Posts (Now Fetches from API)
-async function fetchBlogs() {
-    const blogPostsDiv = document.getElementById("blogPosts"); // Make sure this ID exists in HTML
+async function loadBlogs() {
+    const blogPostsDiv = document.getElementById("blog-list"); // ✅ Make sure this ID exists in blog.html
     if (!blogPostsDiv) {
-        console.error("❌ ERROR: blogPostsDiv not found in the HTML!");
+        console.error("❌ ERROR: blog-list not found in the HTML!");
         return;
     }
 
     blogPostsDiv.innerHTML = "<p>Loading...</p>";
 
     try {
-        const response = await fetch(API_URL); // ✅ Use correct API URL
+        const response = await fetch(API_URL);
         if (!response.ok) throw new Error("Failed to fetch blog posts.");
 
         const blogs = await response.json();
@@ -91,10 +91,10 @@ async function fetchBlogs() {
         blogPostsDiv.innerHTML = "";
         blogs.forEach(blog => {
             let postDiv = document.createElement("div");
-            postDiv.classList.add("blog-post");
+            postDiv.classList.add("blog-item");
 
-            // ✅ Ensure correct image path
-            let imageHtml = blog.imageUrl ? `<img src="${blog.imageUrl}" class="cover-img" alt="Blog Image">` : "";
+            // ✅ Fix: Ensure correct image path
+            let imageHtml = blog.imageUrl ? `<img src="https://thorough-radiance-production.up.railway.app${blog.imageUrl}" class="cover-img" alt="Blog Image">` : "";
 
             postDiv.innerHTML = `
                 <h3>${blog.title}</h3>
@@ -124,7 +124,7 @@ async function deletePost(id) {
         }
 
         alert("✅ Blog deleted successfully!");
-        fetchBlogs(); // Reload the blog list
+        loadBlogs(); // Reload the blog list
     } catch (error) {
         console.error("❌ Error deleting blog:", error);
         alert("❌ Something went wrong while deleting the post.");
