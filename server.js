@@ -5,10 +5,20 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 const blogRoutes = require("./routes/blogRoutes");
-
+const multer = require("multer");
+const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 5000; // ✅ Use Railway's dynamic port
 const MONGO_URI = process.env.MONGO_URI;
+
+// ✅ Setup storage for images
+const storage = multer.diskStorage({
+    destination: "./uploads", // ✅ Images will be saved here
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+    }
+});
+const upload = multer({ storage });
 
 // ✅ Debugging Logs: Environment Check
 console.log("🚀 Starting server...");
@@ -29,6 +39,20 @@ mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
         console.error("❌ MongoDB Connection Error:", err);
         process.exit(1);
     });
+
+    app.post("/api/blogs", upload.single("image"), async (req, res) => {
+        try {
+            const { title, content, author } = req.body;
+            const imageUrl = req.file ? `/uploads/${req.file.filename}` : null; // ✅ Save image path
+    
+            const blog = new Blog({ title, content, author, imageUrl });
+            await blog.save();
+            res.status(201).json(blog);
+        } catch (err) {
+            res.status(500).json({ error: "❌ Could not save blog" });
+        }
+    });
+        
 
 // ✅ Middleware
 app.use(express.json()); // Parse JSON requests
@@ -57,3 +81,4 @@ app.get("/", (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
+

@@ -163,6 +163,7 @@
         <div class="blog-form">
             <input type="text" id="blogTitle" placeholder="Enter blog title..." required>
             <textarea id="blogContent" placeholder="Write your blog post here..."></textarea>
+            <input type="text" id="blogAuthor" placeholder="Author Name" required>
             <input type="file" id="coverImage" accept="image/*">
             <button id="savePostButton">Save Post</button>
         </div>
@@ -185,6 +186,49 @@
     </footer>
 
     <!-- ✅ Corrected JavaScript Reference -->
-    <script src="/script.js"></script>
+    <script>
+        const API_URL = "https://your-railway-app-url/api/blogs"; // Replace with backend URL
+
+        document.getElementById("savePostButton").addEventListener("click", async () => {
+    let formData = new FormData();
+    formData.append("title", document.getElementById("blogTitle").value);
+    formData.append("content", document.getElementById("blogContent").value);
+    formData.append("author", document.getElementById("blogAuthor").value);
+    formData.append("image", document.getElementById("coverImage").files[0]); // ✅ Send selected image
+
+    const response = await fetch("https://your-railway-app-url/api/blogs", {
+        method: "POST",
+        body: formData
+    });
+
+    if (response.ok) {
+        alert("✅ Blog saved!");
+        document.getElementById("blogTitle").value = "";
+        document.getElementById("blogContent").value = "";
+        document.getElementById("blogAuthor").value = "";
+        document.getElementById("coverImage").value = "";
+        loadBlogs();
+    } else {
+        alert("❌ Error saving blog!");
+    }
+});
+
+
+        async function loadBlogs() {
+            const response = await fetch(API_URL);
+            const blogs = await response.json();
+            document.getElementById("blog-list").innerHTML = blogs.map(blog => `
+                <div class="blog-item">
+                    <h3>${blog.title}</h3>
+                    <p><strong>By:</strong> ${blog.author}</p>
+                    <img src="${blog.imageUrl}" class="cover-img" alt="Blog Image">
+                    <p>${blog.content}</p>
+                    <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads}</p>
+                </div>
+            `).join("");
+        }
+
+        loadBlogs();
+    </script>
 </body>
 </html>
