@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     setupPageTransitions();
-    fetchBlogs(); // Load blogs from API
+    fetchBlogs(); // Load blogs from API on page load
 });
 
 /* 🌟 1. Page Transitions (Fade-out Effect) */
@@ -60,7 +60,7 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
 
         alert("✅ Blog post saved!");
         document.getElementById("blogForm").reset();
-        fetchBlogs(); // Reload blog list
+        fetchBlogs(); // ✅ Reload blog list after saving a new post
     } catch (error) {
         console.error("❌ Error saving blog post:", error);
         alert("❌ Failed to save blog post.");
@@ -69,27 +69,39 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
 
 // ✅ Load Blog Posts (Now Fetches from API)
 async function fetchBlogs() {
-    const blogPostsDiv = document.getElementById("blogPosts");
-    if (!blogPostsDiv) return;
+    const blogPostsDiv = document.getElementById("blogPosts"); // Make sure this ID exists in HTML
+    if (!blogPostsDiv) {
+        console.error("❌ ERROR: blogPostsDiv not found in the HTML!");
+        return;
+    }
 
     blogPostsDiv.innerHTML = "<p>Loading...</p>";
 
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL); // ✅ Use correct API URL
         if (!response.ok) throw new Error("Failed to fetch blog posts.");
 
         const blogs = await response.json();
+
+        if (blogs.length === 0) {
+            blogPostsDiv.innerHTML = "<p>No blog posts found.</p>";
+            return;
+        }
 
         blogPostsDiv.innerHTML = "";
         blogs.forEach(blog => {
             let postDiv = document.createElement("div");
             postDiv.classList.add("blog-post");
+
+            // ✅ Ensure correct image path
+            let imageHtml = blog.imageUrl ? `<img src="${blog.imageUrl}" class="cover-img" alt="Blog Image">` : "";
+
             postDiv.innerHTML = `
                 <h3>${blog.title}</h3>
                 <p><strong>By:</strong> ${blog.author}</p>
-                ${blog.imageUrl ? `<img src="${blog.imageUrl}" class="cover-img" alt="Blog Image">` : ""}
+                ${imageHtml}
                 <p>${blog.content}</p>
-                <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads}</p>
+                <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads || 0}</p>
                 <button onclick="deletePost('${blog._id}')">🗑 Delete</button>
             `;
             blogPostsDiv.appendChild(postDiv);
@@ -118,4 +130,3 @@ async function deletePost(id) {
         alert("❌ Something went wrong while deleting the post.");
     }
 }
-
