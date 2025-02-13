@@ -6,7 +6,6 @@ const cors = require("cors");
 const path = require("path");
 const blogRoutes = require("./routes/blogRoutes");
 const multer = require("multer");
-const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 5000; // ✅ Use Railway's dynamic port
 const MONGO_URI = process.env.MONGO_URI;
