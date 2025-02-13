@@ -24,7 +24,7 @@ function setupPageTransitions() {
 }
 
 /* 🌟 2. Blog API Integration */
-const API_URL = "https://thorough-radiance-production.up.railway.app/api/blogs";
+const API_URL = "http://localhost:5000/api/blogs"; // ✅ Update to use your actual backend URL
 
 // ✅ Save Blog Post (Handles Image Upload)
 document.getElementById("blogForm").addEventListener("submit", async (event) => {
@@ -44,9 +44,7 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
     formData.append("title", title);
     formData.append("content", content);
     formData.append("author", author);
-    formData.append("image", imageFile); // ✅ Attach selected image
-
-    console.log("📤 Submitting form data:", formData); // Debugging
+    formData.append("image", imageFile);
 
     try {
         const response = await fetch(API_URL, {
@@ -69,7 +67,7 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
 
 // ✅ Load Blog Posts (Now Fetches from API)
 async function loadBlogs() {
-    const blogPostsDiv = document.getElementById("blog-list"); // ✅ Make sure this ID exists in blog.html
+    const blogPostsDiv = document.getElementById("blog-list"); // ✅ Ensure this ID exists in `blog.html`
     if (!blogPostsDiv) {
         console.error("❌ ERROR: blog-list not found in the HTML!");
         return;
@@ -94,8 +92,7 @@ async function loadBlogs() {
             postDiv.classList.add("blog-item");
 
             // ✅ Fix: Ensure correct image path
-            let imageHtml = blog.imageUrl ? `<img src="${blog.imageUrl}" class="cover-img" alt="Blog Image">` : "";
-
+            let imageHtml = blog.imageUrl ? `<img src="http://localhost:5000${blog.imageUrl}" class="cover-img" alt="Blog Image">` : "<p>No Image</p>";
 
             postDiv.innerHTML = `
                 <h3>${blog.title}</h3>
@@ -103,6 +100,7 @@ async function loadBlogs() {
                 ${imageHtml}
                 <p>${blog.content}</p>
                 <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads || 0}</p>
+                <button onclick="editPost('${blog._id}')">✏️ Edit</button>
                 <button onclick="deletePost('${blog._id}')">🗑 Delete</button>
             `;
             blogPostsDiv.appendChild(postDiv);
@@ -125,9 +123,41 @@ async function deletePost(id) {
         }
 
         alert("✅ Blog deleted successfully!");
-        loadBlogs(); // Reload the blog list
+        loadBlogs(); // ✅ Reload the blog list after deletion
     } catch (error) {
         console.error("❌ Error deleting blog:", error);
         alert("❌ Something went wrong while deleting the post.");
     }
 }
+
+// ✅ Edit Blog Post (Sends PUT Request)
+async function editPost(id) {
+    const newTitle = prompt("Enter new title:");
+    const newContent = prompt("Enter new content:");
+
+    if (!newTitle || !newContent) {
+        alert("❌ Please enter valid values.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: newTitle, content: newContent })
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to edit blog post.");
+        }
+
+        alert("✅ Blog updated successfully!");
+        loadBlogs(); // ✅ Reload the blog list after edit
+    } catch (error) {
+        console.error("❌ Error editing blog:", error);
+        alert("❌ Something went wrong while editing the post.");
+    }
+}
+
+// ✅ Load Blogs on Page Load
+document.addEventListener("DOMContentLoaded", loadBlogs);
