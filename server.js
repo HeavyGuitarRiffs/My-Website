@@ -46,4 +46,6 @@ app.get("/", (req, res) => {
 });
 
 // ✅ **Start Server**
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(5000, "0.0.0.0", () => console.log(`🚀 Server running on port 5000`));
+console.log("Starting server...");
+console.log("MONGO_URI:", process.env.MONGO_URI);
