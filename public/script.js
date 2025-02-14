@@ -58,6 +58,7 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
         alert("✅ Blog post saved!");
         document.getElementById("blogForm").reset();
         loadBlogs(); // ✅ Reload blog list instantly after saving a new post
+        location.reload(); // ✅ Ensure page fully reloads to persist data
     } catch (error) {
         console.error("❌ Error saving blog post:", error);
         alert("❌ Failed to save blog post.");
@@ -89,8 +90,7 @@ async function loadBlogs() {
         blogs.forEach(blog => {
             let postDiv = document.createElement("div");
             postDiv.classList.add("blog-item");
-            postDiv.addEventListener("click", () => readBlogPost(blog));
-
+            
             let imageUrl = blog.imageUrl.startsWith("/uploads/")
                 ? `http://localhost:5000${blog.imageUrl}`
                 : blog.imageUrl;
@@ -105,6 +105,7 @@ async function loadBlogs() {
                 ${imageHtml}
                 <p>${blog.content.substring(0, 100)}...</p>
                 <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads || 0}</p>
+                <button onclick="window.location.href='blogpost.html?id=${blog._id}'">📖 Read More</button>
                 <button onclick="editPost('${blog._id}')">✏️ Edit</button>
                 <button onclick="deletePost('${blog._id}')">🗑 Delete</button>
             `;
@@ -114,12 +115,6 @@ async function loadBlogs() {
         console.error("❌ Error fetching blogs:", error);
         blogPostsDiv.innerHTML = "<p>Error loading blog posts.</p>";
     }
-}
-
-// ✅ Read Blog Post (Stores and Opens in Detail View)
-function readBlogPost(blog) {
-    localStorage.setItem("selectedBlog", JSON.stringify(blog));
-    window.location.href = `blogpost.html?id=${blog._id}`;
 }
 
 // ✅ Delete Blog Post (Sends DELETE Request & Refreshes)
