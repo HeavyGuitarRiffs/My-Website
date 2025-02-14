@@ -55,15 +55,15 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
             throw new Error(`❌ Server Error: ${response.statusText}`);
         }
 
-        alert("✅ Blog post saved!");
-        setTimeout(() => location.reload(), 500); // ✅ Refresh the page instantly after alert
+        // ✅ Remove alert box and trigger page refresh immediately
+        location.reload(); 
     } catch (error) {
         console.error("❌ Error saving blog post:", error);
         alert("❌ Failed to save blog post.");
     }
 });
 
-// ✅ Load Blog Posts (Fetches from API & Displays Correct Thumbnails)
+// ✅ Load Blog Posts (Fetches from API & Displays Titles as Clickable Links)
 async function loadBlogs() {
     const blogPostsDiv = document.getElementById("blog-list");
     if (!blogPostsDiv) {
@@ -89,22 +89,9 @@ async function loadBlogs() {
             let postDiv = document.createElement("div");
             postDiv.classList.add("blog-item");
             
-            let imageUrl = blog.imageUrl.startsWith("/uploads/")
-                ? `http://localhost:5000${blog.imageUrl}`
-                : blog.imageUrl;
-
-            let imageHtml = blog.imageUrl
-                ? `<a href="blogpost.html?id=${blog._id}"><img src="${imageUrl}" class="cover-img-small" alt="Blog Image" onerror="this.onerror=null;this.src='/default-thumbnail.png';"></a>`
-                : "<p>No Image</p>";
-
             postDiv.innerHTML = `
                 <h3><a href="blogpost.html?id=${blog._id}">${blog.title}</a></h3>
-                <p><strong>By:</strong> ${blog.author}</p>
-                ${imageHtml}
-                <p>${blog.content.substring(0, 100)}...</p>
-                <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads || 0}</p>
-                <button onclick="window.location.href='blogpost.html?id=${blog._id}'">📖 Read More</button>
-                <button onclick="deletePost('${blog._id}')" style="background-color: black; color: white; border: none; padding: 5px 10px; cursor: pointer;">🗑 Delete</button>
+                <button onclick="deletePost('${blog._id}')" style="background-color: black; color: black; border: 1px solid black; padding: 5px 10px; cursor: pointer;">🗑 Delete</button>
             `;
             blogPostsDiv.appendChild(postDiv);
         });
@@ -114,7 +101,7 @@ async function loadBlogs() {
     }
 }
 
-// ✅ Delete Blog Post (Fix: Corrected Fetch Call & UI Update)
+// ✅ Delete Blog Post (Fixed Clickability & Functionality)
 async function deletePost(id) {
     if (!confirm("⚠ Are you sure you want to delete this post?")) return;
 
@@ -125,8 +112,7 @@ async function deletePost(id) {
             throw new Error("Failed to delete blog post.");
         }
 
-        alert("✅ Blog deleted successfully!");
-        setTimeout(() => location.reload(), 500); // ✅ Refresh the page instantly after alert
+        location.reload(); // ✅ Refresh the page instantly after deletion
     } catch (error) {
         console.error("❌ Error deleting blog:", error);
         alert("❌ Something went wrong while deleting the post.");
