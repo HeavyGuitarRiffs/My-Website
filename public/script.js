@@ -63,7 +63,7 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
     }
 });
 
-// ✅ Load Blog Posts (Displays Title, Image, Views & Reads with Clickable Title)
+// ✅ Load Blog Posts (Displays Title, Image, Views & Reads with Clickable Title, Edit & Delete Buttons)
 async function loadBlogs() {
     const blogPostsDiv = document.getElementById("blog-list");
     if (!blogPostsDiv) {
@@ -101,7 +101,8 @@ async function loadBlogs() {
                 <h3><a href="blogpost.html?id=${blog._id}" style="text-decoration: none; color: black; cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'">${blog.title}</a></h3>
                 ${imageHtml}
                 <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads || 0}</p>
-                <button onclick="deletePost('${blog._id}')" style="background-color: black; color: black; border: 1px solid black; padding: 5px 10px; cursor: pointer;">🗑 Delete</button>
+                <button onclick="editPost('${blog._id}')" style="background-color: transparent; color: black; border: 1px solid black; padding: 5px 10px; cursor: pointer;">✏️ Edit</button>
+                <button onclick="deletePost('${blog._id}')" style="background-color: transparent; color: black; border: 1px solid black; padding: 5px 10px; cursor: pointer;">🗑 Delete</button>
             `;
             blogPostsDiv.appendChild(postDiv);
         });
@@ -111,7 +112,30 @@ async function loadBlogs() {
     }
 }
 
-// ✅ Delete Blog Post (Fixed Clickability & Functionality)
+// ✅ Edit Blog Post
+async function editPost(id) {
+    const newTitle = prompt("Enter new title:");
+    if (!newTitle) return;
+
+    try {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: newTitle })
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to edit blog post.");
+        }
+
+        setTimeout(() => location.reload(), 500);
+    } catch (error) {
+        console.error("❌ Error editing blog post:", error);
+        alert("❌ Something went wrong while editing the post.");
+    }
+}
+
+// ✅ Delete Blog Post
 async function deletePost(id) {
     if (!confirm("⚠ Are you sure you want to delete this post?")) return;
 
@@ -122,7 +146,6 @@ async function deletePost(id) {
             throw new Error("Failed to delete blog post.");
         }
 
-        // ✅ Refresh the page immediately after deletion
         setTimeout(() => location.reload(), 500);
     } catch (error) {
         console.error("❌ Error deleting blog:", error);
