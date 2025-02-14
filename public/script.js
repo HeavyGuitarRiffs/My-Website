@@ -54,9 +54,11 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
         if (!response.ok) {
             throw new Error(`❌ Server Error: ${response.statusText}`);
         }
-
+        
+        alert("✅ Blog post saved!");
         // ✅ Refresh the page immediately after saving
-        setTimeout(() => location.reload(), 500);
+        loadBlogs(); // Reloads the list without a full page refresh
+
     } catch (error) {
         console.error("❌ Error saving blog post:", error);
         alert("❌ Failed to save blog post.");
