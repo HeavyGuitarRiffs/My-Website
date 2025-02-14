@@ -57,7 +57,6 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
 
         alert("✅ Blog post saved!");
         document.getElementById("blogForm").reset();
-        loadBlogs(); // ✅ Reload blog list instantly after saving a new post
         location.reload(); // ✅ Ensure page fully reloads to persist data
     } catch (error) {
         console.error("❌ Error saving blog post:", error);
@@ -65,7 +64,7 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
     }
 });
 
-// ✅ Load Blog Posts (Now Fetches from API & Displays Correct Thumbnails)
+// ✅ Load Blog Posts (Fetches from API & Displays Correct Thumbnails)
 async function loadBlogs() {
     const blogPostsDiv = document.getElementById("blog-list");
     if (!blogPostsDiv) {
@@ -106,7 +105,6 @@ async function loadBlogs() {
                 <p>${blog.content.substring(0, 100)}...</p>
                 <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads || 0}</p>
                 <button onclick="window.location.href='blogpost.html?id=${blog._id}'">📖 Read More</button>
-                <button onclick="editPost('${blog._id}')">✏️ Edit</button>
                 <button onclick="deletePost('${blog._id}')">🗑 Delete</button>
             `;
             blogPostsDiv.appendChild(postDiv);
@@ -117,7 +115,7 @@ async function loadBlogs() {
     }
 }
 
-// ✅ Delete Blog Post (Sends DELETE Request & Refreshes)
+// ✅ Delete Blog Post (Fix: Corrected Fetch Call)
 async function deletePost(id) {
     if (!confirm("⚠ Are you sure you want to delete this post?")) return;
 
@@ -129,7 +127,7 @@ async function deletePost(id) {
         }
 
         alert("✅ Blog deleted successfully!");
-        loadBlogs(); // ✅ Reload the blog list after deletion
+        location.reload(); // ✅ Ensure page reloads after deletion
     } catch (error) {
         console.error("❌ Error deleting blog:", error);
         alert("❌ Something went wrong while deleting the post.");
