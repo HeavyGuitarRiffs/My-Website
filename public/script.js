@@ -136,21 +136,3 @@ async function editPost(id) {
         alert("❌ Something went wrong while editing the post.");
     }
 }
-
-// ✅ Delete Blog Post
-async function deletePost(id) {
-    if (!confirm("⚠ Are you sure you want to delete this post?")) return;
-
-    try {
-        const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-
-        if (!response.ok) {
-            throw new Error("Failed to delete blog post.");
-        }
-
-        setTimeout(() => location.reload(), 500);
-    } catch (error) {
-        console.error("❌ Error deleting blog:", error);
-        alert("❌ Something went wrong while deleting the post.");
-    }
-}
