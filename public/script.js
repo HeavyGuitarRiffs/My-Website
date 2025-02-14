@@ -63,7 +63,7 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
     }
 });
 
-// ✅ Load Blog Posts (Displays Title, Image, Views & Reads with Clickable Title, Edit & Delete Buttons)
+// ✅ Load Blog Posts (Ensure They Persist After Refresh)
 async function loadBlogs() {
     const blogPostsDiv = document.getElementById("blog-list");
     if (!blogPostsDiv) {
@@ -112,16 +112,18 @@ async function loadBlogs() {
     }
 }
 
-// ✅ Edit Blog Post
+// ✅ Edit Blog Post (Edit All Fields)
 async function editPost(id) {
     const newTitle = prompt("Enter new title:");
-    if (!newTitle) return;
+    const newContent = prompt("Enter new content:");
+    const newAuthor = prompt("Enter new author:");
+    if (!newTitle || !newContent || !newAuthor) return;
 
     try {
         const response = await fetch(`${API_URL}/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: newTitle })
+            body: JSON.stringify({ title: newTitle, content: newContent, author: newAuthor })
         });
 
         if (!response.ok) {
