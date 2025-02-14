@@ -57,8 +57,7 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
 
         alert("✅ Blog post saved!");
         document.getElementById("blogForm").reset();
-        
-        loadBlogs(); // ✅ Reload blog list after saving a new post
+        loadBlogs(); // ✅ Reload blog list instantly after saving a new post
     } catch (error) {
         console.error("❌ Error saving blog post:", error);
         alert("❌ Failed to save blog post.");
@@ -97,14 +96,14 @@ async function loadBlogs() {
                 : blog.imageUrl;
 
             let imageHtml = blog.imageUrl
-                ? `<img src="${imageUrl}" class="cover-img" alt="Blog Image" onerror="this.onerror=null;this.src='/default-thumbnail.png';">`
+                ? `<a href="blogpost.html?id=${blog._id}"><img src="${imageUrl}" class="cover-img-small" alt="Blog Image" onerror="this.onerror=null;this.src='/default-thumbnail.png';"></a>`
                 : "<p>No Image</p>";
 
             postDiv.innerHTML = `
-                <h3>${blog.title}</h3>
+                <h3><a href="blogpost.html?id=${blog._id}">${blog.title}</a></h3>
                 <p><strong>By:</strong> ${blog.author}</p>
                 ${imageHtml}
-                <p>${blog.content}</p>
+                <p>${blog.content.substring(0, 100)}...</p>
                 <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads || 0}</p>
                 <button onclick="editPost('${blog._id}')">✏️ Edit</button>
                 <button onclick="deletePost('${blog._id}')">🗑 Delete</button>
@@ -120,7 +119,7 @@ async function loadBlogs() {
 // ✅ Read Blog Post (Stores and Opens in Detail View)
 function readBlogPost(blog) {
     localStorage.setItem("selectedBlog", JSON.stringify(blog));
-    window.location.href = "blog-detail.html";
+    window.location.href = `blogpost.html?id=${blog._id}`;
 }
 
 // ✅ Delete Blog Post (Sends DELETE Request & Refreshes)
