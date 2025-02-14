@@ -90,8 +90,8 @@ async function loadBlogs() {
         blogs.forEach(blog => {
             let postDiv = document.createElement("div");
             postDiv.classList.add("blog-item");
+            postDiv.addEventListener("click", () => readBlogPost(blog));
 
-            // ✅ Fix: Ensure correct image path
             let imageUrl = blog.imageUrl.startsWith("/uploads/")
                 ? `http://localhost:5000${blog.imageUrl}`
                 : blog.imageUrl;
@@ -117,6 +117,12 @@ async function loadBlogs() {
     }
 }
 
+// ✅ Read Blog Post (Stores and Opens in Detail View)
+function readBlogPost(blog) {
+    localStorage.setItem("selectedBlog", JSON.stringify(blog));
+    window.location.href = "blog-detail.html";
+}
+
 // ✅ Delete Blog Post (Sends DELETE Request & Refreshes)
 async function deletePost(id) {
     if (!confirm("⚠ Are you sure you want to delete this post?")) return;
@@ -135,35 +141,3 @@ async function deletePost(id) {
         alert("❌ Something went wrong while deleting the post.");
     }
 }
-
-// ✅ Edit Blog Post (Sends PUT Request & Refreshes)
-async function editPost(id) {
-    const newTitle = prompt("Enter new title:");
-    const newContent = prompt("Enter new content:");
-
-    if (!newTitle || !newContent) {
-        alert("❌ Please enter valid values.");
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_URL}/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: newTitle, content: newContent })
-        });
-
-        if (!response.ok) {
-            throw new Error("Failed to edit blog post.");
-        }
-
-        alert("✅ Blog updated successfully!");
-        loadBlogs(); // ✅ Reload the blog list after edit
-    } catch (error) {
-        console.error("❌ Error editing blog:", error);
-        alert("❌ Something went wrong while editing the post.");
-    }
-}
-
-// ✅ Load Blogs on Page Load
-document.addEventListener("DOMContentLoaded", loadBlogs);
