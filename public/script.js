@@ -63,7 +63,7 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
     }
 });
 
-// ✅ Load Blog Posts (Fetches from API & Displays Title, Image, Views & Reads)
+// ✅ Load Blog Posts (Displays Title, Image, Views & Reads with Clickable Title)
 async function loadBlogs() {
     const blogPostsDiv = document.getElementById("blog-list");
     if (!blogPostsDiv) {
@@ -98,7 +98,7 @@ async function loadBlogs() {
                 : "<p>No Image</p>";
 
             postDiv.innerHTML = `
-                <h3><a href="blogpost.html?id=${blog._id}" style="text-decoration: none; color: black;">${blog.title}</a></h3>
+                <h3><a href="blogpost.html?id=${blog._id}" style="text-decoration: none; color: black; cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'">${blog.title}</a></h3>
                 ${imageHtml}
                 <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads || 0}</p>
                 <button onclick="deletePost('${blog._id}')" style="background-color: black; color: black; border: 1px solid black; padding: 5px 10px; cursor: pointer;">🗑 Delete</button>
