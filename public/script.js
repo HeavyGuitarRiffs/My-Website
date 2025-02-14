@@ -55,15 +55,15 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
             throw new Error(`❌ Server Error: ${response.statusText}`);
         }
 
-        // ✅ Remove alert box and trigger page refresh immediately
-        location.reload(); 
+        // ✅ Refresh the page immediately after saving
+        setTimeout(() => location.reload(), 500);
     } catch (error) {
         console.error("❌ Error saving blog post:", error);
         alert("❌ Failed to save blog post.");
     }
 });
 
-// ✅ Load Blog Posts (Fetches from API & Displays Titles as Clickable Links)
+// ✅ Load Blog Posts (Fetches from API & Displays Title, Image, Views & Reads)
 async function loadBlogs() {
     const blogPostsDiv = document.getElementById("blog-list");
     if (!blogPostsDiv) {
@@ -89,8 +89,18 @@ async function loadBlogs() {
             let postDiv = document.createElement("div");
             postDiv.classList.add("blog-item");
             
+            let imageUrl = blog.imageUrl.startsWith("/uploads/")
+                ? `http://localhost:5000${blog.imageUrl}`
+                : blog.imageUrl;
+
+            let imageHtml = blog.imageUrl
+                ? `<a href="blogpost.html?id=${blog._id}"><img src="${imageUrl}" class="cover-img-small" alt="Blog Image" onerror="this.onerror=null;this.src='/default-thumbnail.png';"></a>`
+                : "<p>No Image</p>";
+
             postDiv.innerHTML = `
-                <h3><a href="blogpost.html?id=${blog._id}">${blog.title}</a></h3>
+                <h3><a href="blogpost.html?id=${blog._id}" style="text-decoration: none; color: black;">${blog.title}</a></h3>
+                ${imageHtml}
+                <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads || 0}</p>
                 <button onclick="deletePost('${blog._id}')" style="background-color: black; color: black; border: 1px solid black; padding: 5px 10px; cursor: pointer;">🗑 Delete</button>
             `;
             blogPostsDiv.appendChild(postDiv);
@@ -112,7 +122,8 @@ async function deletePost(id) {
             throw new Error("Failed to delete blog post.");
         }
 
-        location.reload(); // ✅ Refresh the page instantly after deletion
+        // ✅ Refresh the page immediately after deletion
+        setTimeout(() => location.reload(), 500);
     } catch (error) {
         console.error("❌ Error deleting blog:", error);
         alert("❌ Something went wrong while deleting the post.");
