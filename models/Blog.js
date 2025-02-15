@@ -13,11 +13,17 @@ const blogSchema = new mongoose.Schema({
     trim: true,
     minlength: [10, "Content must be at least 10 characters long"],
   },
-  coverImage: {
+  author: {
     type: String,
+    required: [true, "Author name is required"],
+    trim: true,
+  },
+  imageUrl: {
+    type: String,
+    required: true,
     validate: {
       validator: function (v) {
-        return /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))$/.test(v);
+        return v.startsWith("/uploads/") || /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))$/.test(v);
       },
       message: "Invalid image URL format",
     },
@@ -27,14 +33,18 @@ const blogSchema = new mongoose.Schema({
     default: 0,
     min: 0,
   },
+  reads: { 
+    type: Number, 
+    default: 0,
+  },
   createdAt: { 
     type: Date, 
-    default: Date.now, 
-    index: true, // Speeds up sorting queries
+    default: Date.now,
+    index: true, // Index speeds up sorting queries
   },
 });
 
-// Auto-increment views when reading a blog
+// ✅ Auto-increment views when reading a blog
 blogSchema.pre("findOneAndUpdate", function (next) {
   if (this.getUpdate().$inc?.views === undefined) {
     this.updateOne({}, { $inc: { views: 1 } });
