@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     setupPageTransitions();
-    loadBlogs(); // ✅ Load blogs on page load
+    loadBlogs(); // ✅ Ensure blogs load on page load
 });
 
 /* 🌟 1. Page Transitions (Fade-out Effect) */
@@ -56,8 +56,7 @@ document.getElementById("blogForm").addEventListener("submit", async (event) => 
         }
         
         alert("✅ Blog post saved!");
-        // ✅ Refresh the page immediately after saving
-        loadBlogs(); // Reloads the list without a full page refresh
+        loadBlogs(); // ✅ Refresh the list without a full page reload
 
     } catch (error) {
         console.error("❌ Error saving blog post:", error);
@@ -86,28 +85,25 @@ async function loadBlogs() {
             return;
         }
 
+        // ✅ Sort posts by newest first
+        blogs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
         blogPostsDiv.innerHTML = "";
         blogs.forEach(blog => {
             let postDiv = document.createElement("div");
             postDiv.classList.add("blog-item");
-            
-            let imageUrl = blog.imageUrl.startsWith("/uploads/")
-                ? `http://localhost:5000${blog.imageUrl}`
-                : blog.imageUrl;
 
-            let imageHtml = blog.imageUrl
-                ? `<a href="blogpost.html?id=${blog._id}"><img src="${imageUrl}" class="cover-img-small" alt="Blog Image" onerror="this.onerror=null;this.src='/default-thumbnail.png';"></a>`
-                : "<p>No Image</p>";
+            // ✅ Fix Image URL handling
+            let imageUrl = blog.imageUrl.startsWith("/uploads/")
+                ? `http://localhost:5000${blog.imageUrl.replace(/\\/g, "/")}`
+                : "default-image.png"; // Fallback image if missing
 
             postDiv.innerHTML = `
-                <h3><a href="blogpost.html?id=${blog._id}" style="text-decoration: none; color: black; cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color='blue'" onmouseout="this.style.color='black'">${blog.title}</a></h3>
-                ${imageHtml}
-                <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads || 0}</p>
-                <button onclick="editPost('${blog._id}')" style="background-color: transparent; color: black; border: 1px solid black; padding: 5px 10px; cursor: pointer;">✏️ Edit</button>
-                <button onclick="deletePost('${blog._id}')" style="background-color: transparent; color: black; border: 1px solid black; padding: 5px 10px; cursor: pointer;">🗑 Delete</button>
+                <h3><a href="blogpost.html?id=${blog._id}" class="blog-title">${blog.title}</a></h3>
             `;
             blogPostsDiv.appendChild(postDiv);
         });
+
     } catch (error) {
         console.error("❌ Error fetching blogs:", error);
         blogPostsDiv.innerHTML = "<p>Error loading blog posts.</p>";
@@ -117,22 +113,21 @@ async function loadBlogs() {
 // ✅ Edit Blog Post (Edit All Fields)
 async function editPost(id) {
     const newTitle = prompt("Enter new title:");
-    const newContent = prompt("Enter new content:");
-    const newAuthor = prompt("Enter new author:");
-    if (!newTitle || !newContent || !newAuthor) return;
+    if (!newTitle) return;
 
     try {
         const response = await fetch(`${API_URL}/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: newTitle, content: newContent, author: newAuthor })
+            body: JSON.stringify({ title: newTitle })
         });
 
         if (!response.ok) {
             throw new Error("Failed to edit blog post.");
         }
 
-        setTimeout(() => location.reload(), 500);
+        loadBlogs(); // ✅ Refresh the list immediately
+
     } catch (error) {
         console.error("❌ Error editing blog post:", error);
         alert("❌ Something went wrong while editing the post.");
