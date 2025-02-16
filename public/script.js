@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     setupPageTransitions();
-    loadBlogPosts();
+    if (document.getElementById("blogPosts")) {
+        loadBlogPosts();
+    }
 });
 
 /* 🌟 1. Page Transitions (Fade-out Effect) */
@@ -12,8 +14,9 @@ function setupPageTransitions() {
             if (this.href.includes(location.hostname)) { // Prevent external links
                 event.preventDefault();
                 
-                // Apply fade-out class (defined in styles.css)
-                pageContent.classList.add("fade-out");
+                if (pageContent) { 
+                    pageContent.classList.add("fade-out");
+                }
 
                 setTimeout(() => {
                     window.location.href = this.href;
@@ -25,10 +28,10 @@ function setupPageTransitions() {
 
 /* 🌟 2. Blog Post Handling (Save & Load) */
 function saveBlogPost() {
-    const title = document.getElementById("blogTitle")?.value;
-    const content = document.getElementById("blogContent")?.value;
+    const title = document.getElementById("blogTitle")?.value.trim();
+    const content = document.getElementById("blogContent")?.value.trim();
 
-    if (!title || !content || title.trim() === "" || content.trim() === "") {
+    if (!title || !content) {
         alert("Please enter both a title and content.");
         return;
     }
@@ -36,8 +39,8 @@ function saveBlogPost() {
     let posts = JSON.parse(localStorage.getItem("blogPosts")) || [];
     posts.push({ title, content, date: new Date().toISOString() });
 
-    // Sort posts alphabetically by title
-    posts.sort((a, b) => a.title.localeCompare(b.title));
+    // Sort posts by date (newest first)
+    posts.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     localStorage.setItem("blogPosts", JSON.stringify(posts));
     loadBlogPosts();
@@ -58,7 +61,7 @@ function loadBlogPosts() {
     posts.forEach(post => {
         let postDiv = document.createElement("div");
         postDiv.classList.add("blog-post");
-        postDiv.innerHTML = `<h3>${post.title}</h3><p>${post.content}</p>`;
+        postDiv.innerHTML = `<h3>${post.title}</h3><p>${post.content}</p><small>${new Date(post.date).toLocaleString()}</small>`;
         blogPostsDiv.appendChild(postDiv);
     });
 }

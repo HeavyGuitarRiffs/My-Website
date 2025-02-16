@@ -4,21 +4,28 @@ const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config();
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // ** Middleware **
-app.use(express.json()); // Parse JSON requests
-app.use(cors()); // Enable cross-origin requests
+app.use(express.json());
+app.use(cors());
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded images
 
-// ** Connect to MongoDB **
-require("dotenv").config(); // Load environment variables
+// ** Check & Connect to MongoDB **
+if (!process.env.MONGO_URI) {
+    console.error("❌ MONGO_URI is missing from .env file.");
+    process.exit(1);
+}
 
-mongoose.connect(process.env.MONGO_URI || "your_mongo_connection_string_here")
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.log("❌ MongoDB Connection Error:", err));
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("✅ MongoDB Connected"))
+    .catch(err => {
+        console.error("❌ MongoDB Connection Error:", err);
+        process.exit(1);
+    });
 
 // ** Blog Schema & Model **
 const BlogSchema = new mongoose.Schema({
@@ -35,7 +42,7 @@ const Blog = mongoose.model("Blog", BlogSchema);
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const dir = "uploads/";
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         cb(null, dir);
     },
     filename: (req, file, cb) => {
@@ -60,13 +67,11 @@ app.get("/api/blogs", async (req, res) => {
 app.get("/api/blogs/:id", async (req, res) => {
     try {
         const blog = await Blog.findById(req.params.id);
-        if (blog) {
-            blog.views += 1;
-            await blog.save();
-            res.json(blog);
-        } else {
-            res.status(404).json({ error: "Blog not found" });
-        }
+        if (!blog) return res.status(404).json({ error: "Blog not found" });
+
+        blog.views += 1;
+        await blog.save();
+        res.json(blog);
     } catch (error) {
         res.status(500).json({ error: "Server Error" });
     }
@@ -76,6 +81,10 @@ app.get("/api/blogs/:id", async (req, res) => {
 app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
     try {
         const { title, content } = req.body;
+        if (!title || !content) {
+            return res.status(400).json({ error: "Title and content are required" });
+        }
+
         const newBlog = new Blog({
             title,
             content,
