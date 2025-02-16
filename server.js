@@ -14,10 +14,10 @@ app.use(cors()); // Enable cross-origin requests
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded images
 
 // ** Connect to MongoDB **
-mongoose.connect("mongodb+srv://Just214:goldenin89@serverlessinstance0.hrofcqp.mongodb.net/?retryWrites=true&w=majority&appName=ServerlessInstance0", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => console.log("✅ MongoDB Connected"))
+require("dotenv").config(); // Load environment variables
+
+mongoose.connect(process.env.MONGO_URI || "your_mongo_connection_string_here")
+  .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.log("❌ MongoDB Connection Error:", err));
 
 // ** Blog Schema & Model **
