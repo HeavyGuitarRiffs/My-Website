@@ -14,6 +14,10 @@ app.use(express.json());
 app.use(cors());
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded images
 
+// ** Ensure uploads directory exists **
+const dir = path.join(__dirname, "uploads/");
+if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
 // ** Check & Connect to MongoDB **
 if (!process.env.MONGO_URI) {
     console.error("❌ MONGO_URI is missing from .env file.");
@@ -31,7 +35,7 @@ mongoose.connect(process.env.MONGO_URI)
 const BlogSchema = new mongoose.Schema({
     title: String,
     content: String,
-    coverImage: String,
+    coverImage: String, // Stores image URL
     views: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now }
 });
@@ -41,7 +45,7 @@ const Blog = mongoose.model("Blog", BlogSchema);
 // ** Image Upload Configuration **
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = "uploads/";
+        const dir = path.join(__dirname, "uploads/");
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         cb(null, dir);
     },
@@ -49,7 +53,19 @@ const storage = multer.diskStorage({
         cb(null, Date.now() + "-" + file.originalname);
     }
 });
-const upload = multer({ storage });
+
+// ** Multer File Upload Middleware **
+const upload = multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+        const allowedMimeTypes = ["image/jpeg", "image/png", "image/gif"];
+        if (allowedMimeTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error("Invalid file type. Only JPEG, PNG, and GIF allowed."));
+        }
+    }
+});
 
 // ** Routes **
 
@@ -85,15 +101,18 @@ app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
             return res.status(400).json({ error: "Title and content are required" });
         }
 
+        const coverImagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
         const newBlog = new Blog({
             title,
             content,
-            coverImage: req.file ? `/uploads/${req.file.filename}` : null
+            coverImage: coverImagePath
         });
 
         await newBlog.save();
         res.status(201).json(newBlog);
     } catch (error) {
+        console.error("Error creating blog post:", error);
         res.status(500).json({ error: "Error creating blog post" });
     }
 });
