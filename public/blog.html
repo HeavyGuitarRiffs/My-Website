@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="/app.css">
     
     <style>
         body {
@@ -160,23 +159,19 @@
 
     <div class="blog-container">
         <div class="title-container">Create a New Blog Post</div>
-        <form id="blogForm" enctype="multipart/form-data" class="blog-form">
+        <div class="blog-form">
             <input type="text" id="blogTitle" placeholder="Enter blog title..." required>
-            <textarea id="blogContent" placeholder="Write your blog post here..." required></textarea>
-            <input type="text" id="blogAuthor" placeholder="Author Name" required>
-            <input type="file" id="coverImage" accept="image/*" required>
-            <button type="submit">Save Post</button>
-        </form>
+            <textarea id="blogContent" placeholder="Write your blog post here..."></textarea>
+            <input type="file" id="coverImage" accept="image/*">
+            <button onclick="saveBlogPost()">Save Post</button>
+        </div>
     </div>
-
+    
     <div class="blog-container">
         <h1>Saved Blog Posts</h1>
         <div id="blog-list"></div>
     </div>
-
-    <div id="blogPosts"></div>
-
-
+    
     <footer class="social-footer">
         <ul>
             <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
@@ -187,83 +182,62 @@
         </ul>
         <p>All Rights Reserved © 2025</p>
     </footer>
-
-    <!-- ✅ JavaScript to Handle Image Upload & Blog Saving -->
+    
     <script>
-        const API_URL = "http://localhost:5000/api/blogs"; // Change to your actual backend URL
-
-        document.getElementById("blogForm").addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            let formData = new FormData();
-            formData.append("title", document.getElementById("blogTitle").value);
-            formData.append("content", document.getElementById("blogContent").value);
-            formData.append("author", document.getElementById("blogAuthor").value);
-            formData.append("image", document.getElementById("coverImage").files[0]);
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`❌ Server Error: ${response.statusText}`);
-                }
-
-                alert("✅ Blog post saved!");
-                document.getElementById("blogForm").reset();
-                loadBlogs();
-            } catch (error) {
-                console.error("❌ Error saving blog post:", error);
-                alert("❌ Failed to save blog post.");
-            }
+        document.addEventListener("DOMContentLoaded", async () => {
+            fetchBlogs();
         });
 
-        async function loadBlogs() {
-    const blogPostsDiv = document.getElementById("blog-list"); // ✅ Correct ID
-    if (!blogPostsDiv) {
-        console.error("❌ ERROR: blog-list not found in the HTML!");
-        return;
-    }
+        async function saveBlogPost() {
+            const title = document.getElementById("blogTitle").value;
+            const content = document.getElementById("blogContent").value;
+            const coverImageInput = document.getElementById("coverImage");
 
-    blogPostsDiv.innerHTML = "<p>Loading...</p>";
+            if (!title || !content) {
+                alert("Title and Content are required!");
+                return;
+            }
 
-    try {
-        const response = await fetch("http://localhost:5000/api/blogs");
-        if (!response.ok) throw new Error("Failed to fetch blog posts.");
+            const formData = new FormData();
+            formData.append("title", title);
+            formData.append("content", content);
 
-        const blogs = await response.json();
+            if (coverImageInput.files.length > 0) {
+                formData.append("coverImage", coverImageInput.files[0]);
+            }
 
-        if (blogs.length === 0) {
-            blogPostsDiv.innerHTML = "<p>No blog posts found.</p>";
-            return;
+            const response = await fetch("http://localhost:5000/api/blogs", {
+                method: "POST",
+                body: formData
+            });
+
+            if (response.ok) {
+                alert("Blog post saved successfully!");
+                document.getElementById("blogTitle").value = "";
+                document.getElementById("blogContent").value = "";
+                document.getElementById("coverImage").value = "";
+                fetchBlogs();
+            } else {
+                alert("Error saving blog post!");
+            }
         }
 
-        blogPostsDiv.innerHTML = "";
-        blogs.forEach(blog => {
-            let postDiv = document.createElement("div");
-            postDiv.classList.add("blog-item");
+        async function fetchBlogs() {
+            const response = await fetch("http://localhost:5000/api/blogs");
+            const blogs = await response.json();
+            const blogList = document.getElementById("blog-list");
+            blogList.innerHTML = "";
 
-            // ✅ Fix image path
-            let imageHtml = blog.imageUrl ? `<img src="${blog.imageUrl}" class="cover-img" alt="Blog Image">` : "";
-
-            postDiv.innerHTML = `
-                <h3>${blog.title}</h3>
-                <p><strong>By:</strong> ${blog.author}</p>
-                ${imageHtml}
-                <p>${blog.content}</p>
-                <p><strong>Views:</strong> ${blog.views} | <strong>Reads:</strong> ${blog.reads || 0}</p>
-                <button onclick="deletePost('${blog._id}')">🗑 Delete</button>
-            `;
-            blogPostsDiv.appendChild(postDiv);
-        });
-    } catch (error) {
-        console.error("❌ Error fetching blogs:", error);
-        blogPostsDiv.innerHTML = "<p>Error loading blog posts.</p>";
-    }
-}
-
+            blogs.forEach(blog => {
+                blogList.innerHTML += `
+                    <div class="blog-item">
+                        <h2>${blog.title}</h2>
+                        <p>${blog.content}</p>
+                        ${blog.coverImage ? `<img src="http://localhost:5000${blog.coverImage}" class="cover-img">` : ""}
+                        <button onclick="deletePost('${blog.id}')">Delete</button>
+                    </div>`;
+            });
+        }
     </script>
 </body>
 </html>
