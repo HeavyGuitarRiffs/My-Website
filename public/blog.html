@@ -198,37 +198,6 @@
             fetchBlogs();
         });
 
-        async function saveBlogPost() {
-            const title = document.getElementById("blogTitle").value;
-            const content = document.getElementById("blogContent").value;
-            const coverImageInput = document.getElementById("coverImage");
-
-            if (!title || !content) {
-                alert("Title and Content are required!");
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append("title", title);
-            formData.append("content", content);
-
-            if (coverImageInput.files.length > 0) {
-                formData.append("coverImage", coverImageInput.files[0]);
-            }
-
-            const response = await fetch("http://localhost:5000/api/blogs", {
-                method: "POST",
-                body: formData
-            });
-
-            if (response.ok) {
-                alert("Blog post saved successfully!");
-                fetchBlogs();
-            } else {
-                alert("Error saving blog post!");
-            }
-        }
-
         async function fetchBlogs() {
             const response = await fetch("http://localhost:5000/api/blogs");
             const blogs = await response.json();
