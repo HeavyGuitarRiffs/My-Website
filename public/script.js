@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     setupPageTransitions();
-    if (document.getElementById("blogPosts")) {
-        loadBlogPosts();
+    if (document.getElementById("blog-list")) {
+        fetchBlogs(); // Load blogs from backend
     }
 });
 
@@ -26,7 +26,65 @@ function setupPageTransitions() {
     });
 }
 
-/* 🌟 2. Blog Post Handling (Save & Load) */
+/* 🌟 2. Fetch Blogs from Backend & Display */
+async function fetchBlogs() {
+    try {
+        const response = await fetch("http://localhost:5000/api/blogs");
+        if (!response.ok) throw new Error("Failed to fetch blogs");
+
+        const blogs = await response.json();
+        const blogList = document.getElementById("blog-list");
+        blogList.innerHTML = ""; // Clear previous content
+
+        blogs.forEach(blog => {
+            let postDiv = document.createElement("div");
+            postDiv.classList.add("blog-item");
+
+            postDiv.innerHTML = `
+                <h2>${blog.title}</h2>
+                <p>${blog.content}</p>
+                ${blog.coverImage ? `<img src="http://localhost:5000${blog.coverImage}" class="cover-img" alt="${blog.title}">` : ""}
+                <button class="delete-btn" data-id="${blog._id}">Delete</button>
+            `;
+
+            blogList.appendChild(postDiv);
+        });
+
+        // Attach event listeners AFTER generating all blog posts
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", async (event) => {
+                const blogId = event.target.getAttribute("data-id");
+                if (confirm("Are you sure you want to delete this post?")) {
+                    await deletePost(blogId);
+                }
+            });
+        });
+
+    } catch (error) {
+        console.error("Error fetching blogs:", error);
+    }
+}
+
+/* 🌟 3. Delete a Blog Post */
+async function deletePost(id) {
+    try {
+        const response = await fetch(`http://localhost:5000/api/blogs/${id}`, {
+            method: "DELETE",
+        });
+
+        if (response.ok) {
+            alert("Post deleted successfully!");
+            fetchBlogs(); // Refresh the list
+        } else {
+            alert("Error deleting post!");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Failed to delete post.");
+    }
+}
+
+/* 🌟 4. LocalStorage-based Blog Posts */
 function saveBlogPost() {
     const title = document.getElementById("blogTitle")?.value.trim();
     const content = document.getElementById("blogContent")?.value.trim();

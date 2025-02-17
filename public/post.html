@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Post</title>
+</head>
+<body>
+
+    <h1 id="post-title"></h1>
+    <img id="post-thumbnail" src="" alt="" style="max-width: 400px;">
+    <p id="post-content"></p>
+    <p>Views: <span id="post-views"></span> | Reads: <span id="post-reads"></span></p>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get("id");
+
+            if (!postId) {
+                document.body.innerHTML = "<p>Post not found.</p>";
+                return;
+            }
+
+            // Fetch the full blog post
+            const response = await fetch(`/api/posts/${postId}`);
+            const post = await response.json();
+
+            if (!post) {
+                document.body.innerHTML = "<p>Post not found.</p>";
+                return;
+            }
+
+            document.getElementById("post-title").innerText = post.title;
+            document.getElementById("post-thumbnail").src = post.thumbnail;
+            document.getElementById("post-thumbnail").alt = post.title;
+            document.getElementById("post-content").innerText = post.content;
+            document.getElementById("post-views").innerText = post.views;
+            document.getElementById("post-reads").innerText = post.reads;
+        });
+    </script>
+
+</body>
+</html>

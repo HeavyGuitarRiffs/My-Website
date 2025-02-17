@@ -19,6 +19,9 @@
             background-attachment: fixed;
             height: 100vh;
         }
+
+        .blog-item { border: 1px solid #ddd; padding: 15px; margin: 10px 0; }
+        .thumbnail { max-width: 200px; display: block; }
     </style>
 
  
@@ -57,6 +60,29 @@
      My site is truly awesome
   </header>
     
+  <h2>Latest Blog Posts</h2>
+  <div id="blog-list"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async function () {
+        const blogList = document.getElementById("blog-list");
+
+        // Fetch blog posts from API
+        const response = await fetch("/api/posts");
+        const posts = await response.json();
+
+        posts.forEach(post => {
+            const postElement = document.createElement("div");
+            postElement.className = "blog-item";
+            postElement.innerHTML = `
+                <img src="${post.thumbnail}" alt="${post.title}" class="thumbnail">
+                <h3><a href="post.html?id=${post.id}">${post.title}</a></h3>
+                <p>Views: ${post.views} | Reads: ${post.reads}</p>
+            `;
+            blogList.appendChild(postElement);
+        });
+    });
+</script>
 
    <table>
     <tr>
@@ -377,7 +403,7 @@
    <main>
       <section>
         <article>
-        <h2>Infinte Craft</h2>
+        <h2>Infinite Craft</h2>
         <p>
             Staying in a constant state of creation, fills every void
         </p>
