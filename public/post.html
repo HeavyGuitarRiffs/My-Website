@@ -137,7 +137,7 @@
 
             try {
                 console.log("Fetching post with ID:", postId); // Debug log
-                const response = await fetch(`http://localhost:5000/api/blogs/${postId}`);
+                const response = await fetch(`http://localhost:5000/api/posts/${postId}`); // Ensure correct API path
                 
                 if (!response.ok) {
                     throw new Error(`Post not found. Server responded with status ${response.status}`);
@@ -175,3 +175,4 @@
 
 </body>
 </html>
+
