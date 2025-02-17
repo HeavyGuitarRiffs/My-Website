@@ -137,31 +137,33 @@
             try {
                 // Fetch the full blog post
                 const response = await fetch(`http://localhost:5000/api/blogs/${postId}`);
+                if (!response.ok) {
+                    throw new Error("Post not found.");
+                }
                 const post = await response.json();
 
-                if (!post) {
-                    document.body.innerHTML = "<p style='text-align:center;'>Post not found.</p>";
-                    return;
+                // Ensure data is properly assigned, prevent undefined values
+                document.getElementById("post-title").innerText = post.title || "Untitled Post";
+                document.getElementById("post-image").src = post.coverImage ? `http://localhost:5000${post.coverImage}` : "images/default-thumbnail.jpg";
+                document.getElementById("post-image").alt = post.title || "Blog Image";
+                document.getElementById("post-content").innerText = post.content || "No content available.";
+                document.getElementById("post-views").innerText = post.views !== undefined ? post.views : "0";
+                document.getElementById("post-reads").innerText = post.reads !== undefined ? post.reads : "0";
+                
+                // Format and display the date properly
+                if (post.date) {
+                    const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric"
+                    });
+                    document.getElementById("post-date").innerText = `Published on: ${formattedDate}`;
+                } else {
+                    document.getElementById("post-date").innerText = "Published on: Unknown Date";
                 }
 
-                document.getElementById("post-title").innerText = post.title;
-                document.getElementById("post-image").src = post.coverImage ? `http://localhost:5000${post.coverImage}` : "images/default-thumbnail.jpg";
-                document.getElementById("post-image").alt = post.title;
-                document.getElementById("post-content").innerText = post.content;
-                document.getElementById("post-views").innerText = post.views;
-                document.getElementById("post-reads").innerText = post.reads;
-                
-                // Format the date properly
-                const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
-                });
-
-                document.getElementById("post-date").innerText = `Published on: ${formattedDate}`;
-
             } catch (error) {
-                document.body.innerHTML = "<p style='text-align:center;'>Error fetching blog post.</p>";
+                document.body.innerHTML = "<p style='text-align:center;'>Error loading blog post.</p>";
             }
         });
     </script>
