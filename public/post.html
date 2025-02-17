@@ -4,13 +4,125 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog Post</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #222;
+            color: white;
+            font-family: "Arial", sans-serif;
+            padding: 20px;
+        }
+
+        .main-navbar {
+            background: #111;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-navbar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .main-navbar ul li {
+            display: inline;
+            margin: 0 20px;
+        }
+
+        .main-navbar ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: bold;
+            transition: 0.3s ease-in-out;
+        }
+
+        .main-navbar ul li a:hover {
+            color: #00ff00;
+        }
+
+        .blog-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .blog-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .blog-date {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+
+        .blog-image {
+            width: 100%;
+            max-height: 350px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .blog-content {
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: justify;
+            line-height: 1.6;
+        }
+
+        .meta-info {
+            font-size: 14px;
+            color: #ccc;
+            margin-top: 10px;
+        }
+
+        .back-btn {
+            margin-top: 20px;
+            display: inline-block;
+            padding: 10px 15px;
+            background: #00ff00;
+            color: black;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #009900;
+            color: white;
+        }
+
+    </style>
 </head>
 <body>
 
-    <h1 id="post-title"></h1>
-    <img id="post-thumbnail" src="" alt="" style="max-width: 400px;">
-    <p id="post-content"></p>
-    <p>Views: <span id="post-views"></span> | Reads: <span id="post-reads"></span></p>
+    <nav class="main-navbar">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="blog.html">Blog</a></li>
+        </ul>
+    </nav>
+
+    <div class="blog-container">
+        <h1 id="post-title" class="blog-title">Loading...</h1>
+        <p id="post-date" class="blog-date"></p>
+        <img id="post-image" src="" alt="Blog Image" class="blog-image">
+        <p id="post-content" class="blog-content">Fetching content...</p>
+        <p class="meta-info">
+            Views: <span id="post-views">0</span> | Reads: <span id="post-reads">0</span>
+        </p>
+        <a href="blog.html" class="back-btn">← Back to Blog</a>
+    </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", async function () {
@@ -18,25 +130,39 @@
             const postId = urlParams.get("id");
 
             if (!postId) {
-                document.body.innerHTML = "<p>Post not found.</p>";
+                document.body.innerHTML = "<p style='text-align:center;'>Post not found.</p>";
                 return;
             }
 
-            // Fetch the full blog post
-            const response = await fetch(`/api/posts/${postId}`);
-            const post = await response.json();
+            try {
+                // Fetch the full blog post
+                const response = await fetch(`http://localhost:5000/api/blogs/${postId}`);
+                const post = await response.json();
 
-            if (!post) {
-                document.body.innerHTML = "<p>Post not found.</p>";
-                return;
+                if (!post) {
+                    document.body.innerHTML = "<p style='text-align:center;'>Post not found.</p>";
+                    return;
+                }
+
+                document.getElementById("post-title").innerText = post.title;
+                document.getElementById("post-image").src = post.coverImage ? `http://localhost:5000${post.coverImage}` : "images/default-thumbnail.jpg";
+                document.getElementById("post-image").alt = post.title;
+                document.getElementById("post-content").innerText = post.content;
+                document.getElementById("post-views").innerText = post.views;
+                document.getElementById("post-reads").innerText = post.reads;
+                
+                // Format the date properly
+                const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                });
+
+                document.getElementById("post-date").innerText = `Published on: ${formattedDate}`;
+
+            } catch (error) {
+                document.body.innerHTML = "<p style='text-align:center;'>Error fetching blog post.</p>";
             }
-
-            document.getElementById("post-title").innerText = post.title;
-            document.getElementById("post-thumbnail").src = post.thumbnail;
-            document.getElementById("post-thumbnail").alt = post.title;
-            document.getElementById("post-content").innerText = post.content;
-            document.getElementById("post-views").innerText = post.views;
-            document.getElementById("post-reads").innerText = post.reads;
         });
     </script>
 
