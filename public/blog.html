@@ -53,6 +53,53 @@
             background: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
             text-align: center;
+            position: relative;
+        }
+
+        .title-container {
+            text-align: center;
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            width: 60%;
+            box-shadow: 0 4px 6px rgba(0, 255, 0, 0.4);
+        }
+
+        .blog-form {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .blog-form input, .blog-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .blog-form button {
+            padding: 12px;
+            background: #00ff00;
+            color: black;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: 0.3s;
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+        }
+        .blog-form button:hover {
+            background: #009900;
+            color: white;
         }
 
         .blog-item {
@@ -61,8 +108,6 @@
             margin: 20px 0;
             border-radius: 8px;
             text-align: center;
-            position: relative;
-            overflow: hidden;
         }
 
         .thumbnail-container {
@@ -138,6 +183,16 @@
     </nav>
 
     <div class="blog-container">
+        <div class="title-container">Create a New Blog Post</div>
+        <div class="blog-form">
+            <input type="text" id="blogTitle" placeholder="Enter blog title..." required>
+            <textarea id="blogContent" placeholder="Write your blog post here..."></textarea>
+            <input type="file" id="coverImage" accept="image/*">
+            <button onclick="saveBlogPost()">Save Post</button>
+        </div>
+    </div>
+
+    <div class="blog-container">
         <h1>Saved Blog Posts</h1>
         <div id="blog-list"></div>
     </div>
@@ -150,6 +205,37 @@
         document.addEventListener("DOMContentLoaded", async () => {
             fetchBlogs();
         });
+
+        async function saveBlogPost() {
+            const title = document.getElementById("blogTitle").value;
+            const content = document.getElementById("blogContent").value;
+            const coverImageInput = document.getElementById("coverImage");
+
+            if (!title || !content) {
+                alert("Title and Content are required!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("title", title);
+            formData.append("content", content);
+
+            if (coverImageInput.files.length > 0) {
+                formData.append("coverImage", coverImageInput.files[0]);
+            }
+
+            const response = await fetch("http://localhost:5000/api/blogs", {
+                method: "POST",
+                body: formData
+            });
+
+            if (response.ok) {
+                alert("Blog post saved successfully!");
+                fetchBlogs();
+            } else {
+                alert("Error saving blog post!");
+            }
+        }
 
         async function fetchBlogs() {
             const response = await fetch("http://localhost:5000/api/blogs");
