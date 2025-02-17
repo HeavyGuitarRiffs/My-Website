@@ -137,9 +137,11 @@
             try {
                 // Fetch the full blog post
                 const response = await fetch(`http://localhost:5000/api/blogs/${postId}`);
+
                 if (!response.ok) {
                     throw new Error("Post not found.");
                 }
+
                 const post = await response.json();
 
                 // Ensure data is properly assigned, prevent undefined values
@@ -149,7 +151,7 @@
                 document.getElementById("post-content").innerText = post.content || "No content available.";
                 document.getElementById("post-views").innerText = post.views !== undefined ? post.views : "0";
                 document.getElementById("post-reads").innerText = post.reads !== undefined ? post.reads : "0";
-                
+
                 // Format and display the date properly
                 if (post.date) {
                     const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
