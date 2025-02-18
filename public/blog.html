@@ -236,6 +236,10 @@
             blogList.innerHTML = "";
 
             blogs.forEach(blog => {
+                if (!blog.id) {
+        console.warn("⚠️ Missing Blog ID - Skipping this blog:", blog);
+        return;  // Skip rendering broken links
+    }
                 blogList.innerHTML += `
                     <div class="blog-item">
                         <a href="post.html?id=${blog.id}" class="thumbnail-container">

@@ -179,6 +179,18 @@
                 document.querySelector(".blog-container").innerHTML = "<p style='text-align:center;'>Error loading blog post.</p>";
             }
         });
+
+        const urlParams = new URLSearchParams(window.location.search);
+const postId = urlParams.get("id");
+
+console.log("🔍 Extracted Post ID:", postId);  // Log to confirm ID is correct
+
+if (!postId || postId.trim() === "" || postId === "undefined" || postId === "null") {
+    console.error("❌ Error: Invalid or missing post ID in URL.");
+    document.body.innerHTML = "<p style='text-align:center;'>Post not found.</p>";
+    return;
+}
+
     </script>
 
 </body>

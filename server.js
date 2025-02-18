@@ -103,6 +103,26 @@ app.get("/api/blogs/:id", async (req, res) => {
     }
 });
 
+app.get("/api/blogs", async (req, res) => {
+    try {
+        const blogs = await Blog.find().sort({ createdAt: -1 });
+
+        // ✅ Ensure each blog object contains `_id`
+        const formattedBlogs = blogs.map(blog => ({
+            id: blog._id, // Convert MongoDB `_id` to `id`
+            title: blog.title,
+            content: blog.content,
+            coverImage: blog.coverImage,
+            views: blog.views
+        }));
+
+        res.json(formattedBlogs);
+    } catch (error) {
+        res.status(500).json({ error: "Server Error" });
+    }
+});
+
+
 // 📌 Create a new blog post with optional image upload
 app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
     try {
