@@ -175,6 +175,16 @@
     </nav>
 
     <div class="blog-container">
+        <div class="title-container">Create a New Blog Post</div>
+        <div class="blog-form">
+            <input type="text" id="blogTitle" placeholder="Enter blog title..." required>
+            <textarea id="blogContent" placeholder="Write your blog post here..."></textarea>
+            <input type="file" id="coverImage" accept="image/*">
+            <button onclick="saveBlogPost()">Save Post</button>
+        </div>
+    </div>
+
+    <div class="blog-container">
         <h1>Saved Blog Posts</h1>
         <div id="blog-list"></div>
     </div>
@@ -188,37 +198,55 @@
             fetchBlogs();
         });
 
-        async function fetchBlogs() {
-            try {
-                const response = await fetch("http://localhost:5000/api/blogs");
-                const blogs = await response.json();
-                const blogList = document.getElementById("blog-list");
-                blogList.innerHTML = "";
+        async function saveBlogPost() {
+            const title = document.getElementById("blogTitle").value;
+            const content = document.getElementById("blogContent").value;
+            const coverImageInput = document.getElementById("coverImage");
 
-                blogs.forEach(blog => {
-                    // ✅ Log blog object for debugging
-                    console.log("🔍 Checking Blog Data:", blog);
-
-                    // ✅ Ensure blog has an ID before displaying it
-                    if (!blog.id) {
-                        console.warn("⚠️ Missing Blog ID - Skipping:", blog);
-                        return;
-                    }
-
-                    blogList.innerHTML += `
-                        <div class="blog-item">
-                            <a href="post.html?id=${blog.id}" class="thumbnail-container">
-                                <img src="${blog.coverImage ? `http://localhost:5000${blog.coverImage}` : 'images/default-thumbnail.jpg'}" class="thumbnail">
-                            </a>
-                            <h2 class="blog-title"><a href="post.html?id=${blog.id}">${blog.title}</a></h2>
-                            <p class="meta-info">Views: ${blog.views} | Reads: ${blog.reads}</p>
-                        </div>`;
-                });
-            } catch (error) {
-                console.error("❌ Error fetching blogs:", error);
-                document.getElementById("blog-list").innerHTML = "<p>Error loading blog posts.</p>";
+            if (!title || !content) {
+                alert("Title and Content are required!");
+                return;
             }
+
+            const formData = new FormData();
+            formData.append("title", title);
+            formData.append("content", content);
+
+            if (coverImageInput.files.length > 0) {
+                formData.append("coverImage", coverImageInput.files[0]);
+            }
+
+            const response = await fetch("http://localhost:5000/api/blogs", {
+                method: "POST",
+                body: formData
+            });
+
+            if (response.ok) {
+                alert("Blog post saved successfully!");
+                fetchBlogs();
+            } else {
+                alert("Error saving blog post!");
+            }
+        }
+
+        async function fetchBlogs() {
+            const response = await fetch("http://localhost:5000/api/blogs");
+            const blogs = await response.json();
+            const blogList = document.getElementById("blog-list");
+            blogList.innerHTML = "";
+
+            blogs.forEach(blog => {
+                blogList.innerHTML += `
+                    <div class="blog-item">
+                        <a href="post.html?id=${blog.id}" class="thumbnail-container">
+                            <img src="${blog.coverImage ? `http://localhost:5000${blog.coverImage}` : 'images/default-thumbnail.jpg'}" class="thumbnail">
+                        </a>
+                        <h2 class="blog-title"><a href="post.html?id=${blog.id}">${blog.title}</a></h2>
+                        <p class="meta-info">Views: ${blog.views} | Reads: ${blog.reads}</p>
+                    </div>`;
+            });
         }
     </script>
 </body>
 </html>
+

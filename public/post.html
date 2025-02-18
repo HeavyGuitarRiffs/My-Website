@@ -127,21 +127,19 @@
     <script>
         document.addEventListener("DOMContentLoaded", async function () {
             const urlParams = new URLSearchParams(window.location.search);
-            const postId = urlParams.get("id");
+            let postId = urlParams.get("id");
 
-            // ✅ Added extra validation and debugging log for postId
-            console.log("🔍 Extracted Post ID:", postId);
-
+            // ✅ Ensure postId is properly extracted
             if (!postId || postId.trim() === "" || postId === "undefined" || postId === "null") {
                 console.error("❌ Error: Invalid or missing post ID in URL.");
-                document.body.innerHTML = "<p style='text-align:center;'>Post not found.</p>";
+                document.querySelector(".blog-container").innerHTML = "<p style='text-align:center;'>Post not found.</p>";
                 return;
             }
 
             console.log("🟢 Fetching post with ID:", postId);
 
             try {
-                // **Check API URL - Ensure the correct API path**
+                // **Ensure the correct API URL**
                 const response = await fetch(`http://localhost:5000/api/blogs/${postId}`);
 
                 if (!response.ok) {
@@ -156,7 +154,7 @@
                     throw new Error("⚠️ API returned empty or invalid data.");
                 }
 
-                // **Check individual fields for errors**
+                // ✅ Populate Blog Post Data
                 document.getElementById("post-title").innerText = post.title || "Untitled Post";
                 document.getElementById("post-image").src = post.coverImage ? `http://localhost:5000${post.coverImage}` : "images/default-thumbnail.jpg";
                 document.getElementById("post-image").alt = post.title || "Blog Image";
@@ -164,7 +162,7 @@
                 document.getElementById("post-views").innerText = post.views !== undefined ? post.views : "0";
                 document.getElementById("post-reads").innerText = post.reads !== undefined ? post.reads : "0";
 
-                // **Format and display the date properly**
+                // ✅ Format and display the date properly
                 if (post.date) {
                     const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
                         year: "numeric",
@@ -178,7 +176,7 @@
 
             } catch (error) {
                 console.error("❌ Error fetching blog post:", error);
-                document.body.innerHTML = "<p style='text-align:center;'>Error loading blog post.</p>";
+                document.querySelector(".blog-container").innerHTML = "<p style='text-align:center;'>Error loading blog post.</p>";
             }
         });
     </script>
