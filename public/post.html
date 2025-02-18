@@ -165,22 +165,21 @@
                 document.getElementById("post-reads").innerText = post.reads !== undefined ? post.reads : "0";
 
                 // ✅ Format and display the date properly
-                if (post.date) {
-                    const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric"
-                    });
-                    document.getElementById("post-date").innerText = `Published on: ${formattedDate}`;
-                } else {
-                    document.getElementById("post-date").innerText = "Published on: Unknown Date";
-                }
-
-            } catch (error) {
-                console.error("❌ Error fetching blog post:", error);
-                document.querySelector(".blog-container").innerHTML = "<p style='text-align:center;'>Error loading blog post.</p>";
-            }
-        });
+        if (post.createdAt) {
+            const formattedDate = new Date(post.createdAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            });
+            document.getElementById("post-date").innerText = `Published on: ${formattedDate}`;
+        } else {
+            document.getElementById("post-date").innerText = "Published on: Unknown Date";
+        }
+    } catch (error) {
+        console.error("❌ Error fetching blog post:", error);
+        document.querySelector(".blog-container").innerHTML = "<p style='text-align:center;'>Error loading blog post.</p>";
+    }
+});
 
     </script>
 
