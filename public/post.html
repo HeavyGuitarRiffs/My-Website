@@ -130,6 +130,8 @@
             let postId = urlParams.get("id");
 
             // ✅ Ensure postId is properly extracted
+            console.log("🔍 Extracted Post ID:", postId);
+
             if (!postId || postId.trim() === "" || postId === "undefined" || postId === "null") {
                 console.error("❌ Error: Invalid or missing post ID in URL.");
                 document.querySelector(".blog-container").innerHTML = "<p style='text-align:center;'>Post not found.</p>";
@@ -139,7 +141,7 @@
             console.log("🟢 Fetching post with ID:", postId);
 
             try {
-                // **Ensure the correct API URL**
+                // ✅ Correct API URL syntax
                 const response = await fetch(`http://localhost:5000/api/blogs/${postId}`);
 
                 if (!response.ok) {
@@ -149,7 +151,7 @@
                 const post = await response.json();
                 console.log("🟢 Fetched post data:", post);
 
-                // **Ensure the API returns valid data**
+                // ✅ Ensure the API returns valid data
                 if (!post || Object.keys(post).length === 0) {
                     throw new Error("⚠️ API returned empty or invalid data.");
                 }
@@ -179,17 +181,6 @@
                 document.querySelector(".blog-container").innerHTML = "<p style='text-align:center;'>Error loading blog post.</p>";
             }
         });
-
-        const urlParams = new URLSearchParams(window.location.search);
-const postId = urlParams.get("id");
-
-console.log("🔍 Extracted Post ID:", postId);  // Log to confirm ID is correct
-
-if (!postId || postId.trim() === "" || postId === "undefined" || postId === "null") {
-    console.error("❌ Error: Invalid or missing post ID in URL.");
-    document.body.innerHTML = "<p style='text-align:center;'>Post not found.</p>";
-    return;
-}
 
     </script>
 

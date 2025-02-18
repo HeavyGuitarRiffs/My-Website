@@ -229,28 +229,45 @@
             }
         }
 
-        async function fetchBlogs() {
+        
+    document.addEventListener("DOMContentLoaded", async () => {
+        fetchBlogs();
+    });
+
+    async function fetchBlogs() {
+        try {
             const response = await fetch("http://localhost:5000/api/blogs");
             const blogs = await response.json();
             const blogList = document.getElementById("blog-list");
             blogList.innerHTML = "";
 
             blogs.forEach(blog => {
-                if (!blog.id) {
-        console.warn("⚠️ Missing Blog ID - Skipping this blog:", blog);
-        return;  // Skip rendering broken links
-    }
+                console.log("🔍 Checking Blog Data:", blog); // ✅ Debugging
+
+                // ✅ Ensure blog ID exists before generating a link
+                const blogId = blog.id || blog._id;  // Support MongoDB _id
+                if (!blogId) {
+                    console.warn("⚠️ Missing Blog ID - Skipping this blog:", blog);
+                    return;
+                }
+
                 blogList.innerHTML += `
                     <div class="blog-item">
-                        <a href="post.html?id=${blog.id}" class="thumbnail-container">
+                        <a href="post.html?id=${blogId}" class="thumbnail-container">
                             <img src="${blog.coverImage ? `http://localhost:5000${blog.coverImage}` : 'images/default-thumbnail.jpg'}" class="thumbnail">
                         </a>
-                        <h2 class="blog-title"><a href="post.html?id=${blog.id}">${blog.title}</a></h2>
+                        <h2 class="blog-title"><a href="post.html?id=${blogId}">${blog.title}</a></h2>
                         <p class="meta-info">Views: ${blog.views} | Reads: ${blog.reads}</p>
                     </div>`;
             });
+
+        } catch (error) {
+            console.error("❌ Error fetching blogs:", error);
+            document.getElementById("blog-list").innerHTML = "<p>Error loading blog posts.</p>";
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
 

@@ -83,8 +83,20 @@ const upload = multer({
 app.get("/api/blogs", async (req, res) => {
     try {
         const blogs = await Blog.find().sort({ createdAt: -1 });
-        res.json(blogs);
+
+        // ✅ Ensure each blog object contains `_id`
+        const formattedBlogs = blogs.map(blog => ({
+            id: blog._id, // Convert MongoDB `_id` to `id`
+            title: blog.title,
+            content: blog.content,
+            coverImage: blog.coverImage,
+            views: blog.views,
+            createdAt: blog.createdAt
+        }));
+
+        res.json(formattedBlogs);
     } catch (error) {
+        console.error("❌ Error fetching blogs:", error);
         res.status(500).json({ error: "Server Error" });
     }
 });
@@ -93,35 +105,18 @@ app.get("/api/blogs", async (req, res) => {
 app.get("/api/blogs/:id", async (req, res) => {
     try {
         const blog = await Blog.findById(req.params.id);
-        if (!blog) return res.status(404).json({ error: "Blog not found" });
+        if (!blog) {
+            return res.status(404).json({ error: "Blog not found" });
+        }
 
         blog.views += 1;
         await blog.save();
         res.json(blog);
     } catch (error) {
+        console.error("❌ Error fetching blog post:", error);
         res.status(500).json({ error: "Server Error" });
     }
 });
-
-app.get("/api/blogs", async (req, res) => {
-    try {
-        const blogs = await Blog.find().sort({ createdAt: -1 });
-
-        // ✅ Ensure each blog object contains `_id`
-        const formattedBlogs = blogs.map(blog => ({
-            id: blog._id, // Convert MongoDB `_id` to `id`
-            title: blog.title,
-            content: blog.content,
-            coverImage: blog.coverImage,
-            views: blog.views
-        }));
-
-        res.json(formattedBlogs);
-    } catch (error) {
-        res.status(500).json({ error: "Server Error" });
-    }
-});
-
 
 // 📌 Create a new blog post with optional image upload
 app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
@@ -142,7 +137,7 @@ app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
         await newBlog.save();
         res.status(201).json(newBlog);
     } catch (error) {
-        console.error("Error creating blog post:", error);
+        console.error("❌ Error creating blog post:", error);
         res.status(500).json({ error: "Error creating blog post" });
     }
 });
@@ -165,6 +160,7 @@ app.delete("/api/blogs/:id", async (req, res) => {
 
         res.json({ message: "Blog deleted successfully" });
     } catch (error) {
+        console.error("❌ Error deleting blog post:", error);
         res.status(500).json({ error: "Error deleting blog post" });
     }
 });
