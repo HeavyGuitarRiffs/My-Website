@@ -41,7 +41,7 @@
         }
 
         .main-navbar ul li a:hover {
-            color: #4d4e4d;
+            color: #00ff00;
         }
 
         .blog-container {
@@ -130,8 +130,6 @@
             let postId = urlParams.get("id");
 
             // ✅ Ensure postId is properly extracted
-            console.log("🔍 Extracted Post ID:", postId);
-
             if (!postId || postId.trim() === "" || postId === "undefined" || postId === "null") {
                 console.error("❌ Error: Invalid or missing post ID in URL.");
                 document.querySelector(".blog-container").innerHTML = "<p style='text-align:center;'>Post not found.</p>";
@@ -141,7 +139,7 @@
             console.log("🟢 Fetching post with ID:", postId);
 
             try {
-                // ✅ Correct API URL syntax
+                // **Ensure the correct API URL**
                 const response = await fetch(`http://localhost:5000/api/blogs/${postId}`);
 
                 if (!response.ok) {
@@ -151,7 +149,7 @@
                 const post = await response.json();
                 console.log("🟢 Fetched post data:", post);
 
-                // ✅ Ensure the API returns valid data
+                // **Ensure the API returns valid data**
                 if (!post || Object.keys(post).length === 0) {
                     throw new Error("⚠️ API returned empty or invalid data.");
                 }
@@ -165,22 +163,22 @@
                 document.getElementById("post-reads").innerText = post.reads !== undefined ? post.reads : "0";
 
                 // ✅ Format and display the date properly
-        if (post.createdAt) {
-            const formattedDate = new Date(post.createdAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric"
-            });
-            document.getElementById("post-date").innerText = `Published on: ${formattedDate}`;
-        } else {
-            document.getElementById("post-date").innerText = "Published on: Unknown Date";
-        }
-    } catch (error) {
-        console.error("❌ Error fetching blog post:", error);
-        document.querySelector(".blog-container").innerHTML = "<p style='text-align:center;'>Error loading blog post.</p>";
-    }
-});
+                if (post.date) {
+                    const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric"
+                    });
+                    document.getElementById("post-date").innerText = `Published on: ${formattedDate}`;
+                } else {
+                    document.getElementById("post-date").innerText = "Published on: Unknown Date";
+                }
 
+            } catch (error) {
+                console.error("❌ Error fetching blog post:", error);
+                document.querySelector(".blog-container").innerHTML = "<p style='text-align:center;'>Error loading blog post.</p>";
+            }
+        });
     </script>
 
 </body>

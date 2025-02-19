@@ -195,17 +195,10 @@
     
     <script>
 
-document.addEventListener("DOMContentLoaded", async () => {
-    const isAdmin = localStorage.getItem("isAdmin") === "true"; // Change this based on your auth setup
-
-    if (isAdmin) {
-        document.getElementById("admin-panel").style.display = "block";
-    }
-
-   // ✅ Fetch & persist blogs for ALL users
-   fetchBlogs();
-});
-
+        
+        document.addEventListener("DOMContentLoaded", async () => {
+            fetchBlogs();
+        });
 
         async function saveBlogPost() {
             const title = document.getElementById("blogTitle").value;
@@ -239,6 +232,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         
+    document.addEventListener("DOMContentLoaded", async () => {
+        fetchBlogs();
+    });
 
     async function fetchBlogs() {
         try {

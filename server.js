@@ -131,7 +131,8 @@ app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
         const newBlog = new Blog({
             title,
             content,
-            coverImage: coverImagePath
+            coverImage: coverImagePath,
+            date: new Date().toLocaleString() // Add date when creating a post
         });
 
         await newBlog.save();
