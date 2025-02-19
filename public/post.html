@@ -124,7 +124,83 @@
         <a href="blog.html" class="back-btn">← Back to Blog</a>
     </div>
 
+  <!-- ✅ Edit Button for Admins Only -->
+  <button id="edit-btn" class="edit-btn" style="display: none;">✏️ Edit</button>
+  <button id="save-btn" class="save-btn" style="display: none;">💾 Save</button>
+
+
     <script>
+
+const isAdmin = localStorage.getItem("isAdmin") === "true"; // ✅ Check if user is admin
+        let blogId = null;
+
+        async function loadPost() {
+            const params = new URLSearchParams(window.location.search);
+            blogId = params.get("id");
+
+            const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`);
+            const post = await response.json();
+
+            if (!post) {
+                document.body.innerHTML = "<h2>Blog post not found.</h2>";
+                return;
+            }
+
+            // ✅ Display post details
+            document.getElementById("post-title").textContent = post.title;
+            document.getElementById("post-date").textContent = post.date;
+            document.getElementById("post-content").textContent = post.content;
+
+            if (post.coverImage) {
+                const img = document.getElementById("post-image");
+                img.src = `http://localhost:5000${post.coverImage}`;
+                img.style.display = "block";
+            }
+
+            // ✅ Show Edit Button only for Admin
+            if (isAdmin) {
+                document.getElementById("edit-btn").style.display = "inline-block";
+            }
+        }
+
+        document.getElementById("edit-btn").addEventListener("click", () => {
+            // ✅ Convert title and content to editable fields
+            const title = document.getElementById("post-title");
+            const content = document.getElementById("post-content");
+
+            title.innerHTML = `<input type="text" id="edit-title" value="${title.textContent}">`;
+            content.innerHTML = `<textarea id="edit-content">${content.textContent}</textarea>`;
+
+            document.getElementById("edit-btn").style.display = "none";  // Hide Edit button
+            document.getElementById("save-btn").style.display = "inline-block";  // Show Save button
+        });
+
+        document.getElementById("save-btn").addEventListener("click", async () => {
+            const newTitle = document.getElementById("edit-title").value;
+            const newContent = document.getElementById("edit-content").value;
+
+            if (!newTitle || !newContent) {
+                alert("Title and content cannot be empty!");
+                return;
+            }
+
+            const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: newTitle, content: newContent })
+            });
+
+            if (response.ok) {
+                alert("Blog post updated successfully!");
+                location.reload();  // ✅ Refresh to show the new content
+            } else {
+                alert("Error updating blog post!");
+            }
+        });
+
+        window.onload = loadPost;
+
+        
         document.addEventListener("DOMContentLoaded", async function () {
             const urlParams = new URLSearchParams(window.location.search);
             let postId = urlParams.get("id");
