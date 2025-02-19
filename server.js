@@ -47,7 +47,8 @@ const BlogSchema = new mongoose.Schema({
     content: String,
     coverImage: String, // Stores image URL
     views: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    date: { type: String, default: () => new Date().toLocaleString() } // ✅ Add this line
 });
 
 const Blog = mongoose.model("Blog", BlogSchema);
@@ -91,7 +92,8 @@ app.get("/api/blogs", async (req, res) => {
             content: blog.content,
             coverImage: blog.coverImage,
             views: blog.views,
-            createdAt: blog.createdAt
+            createdAt: blog.createdAt,
+            date: blog.date // ✅ Add this line
         }));
 
         res.json(formattedBlogs);
@@ -111,7 +113,17 @@ app.get("/api/blogs/:id", async (req, res) => {
 
         blog.views += 1;
         await blog.save();
-        res.json(blog);
+        
+
+        res.json({
+            id: blog._id,
+            title: blog.title,
+            content: blog.content,
+            coverImage: blog.coverImage,
+            views: blog.views,
+            createdAt: blog.createdAt,
+            date: blog.date // ✅ Add this line
+        });
     } catch (error) {
         console.error("❌ Error fetching blog post:", error);
         res.status(500).json({ error: "Server Error" });
