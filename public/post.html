@@ -124,9 +124,10 @@
         <a href="blog.html" class="back-btn">← Back to Blog</a>
     </div>
 
-  <!-- ✅ Edit Button for Admins Only -->
-  <button id="edit-btn" class="edit-btn" style="display: none;">✏️ Edit</button>
-  <button id="save-btn" class="save-btn" style="display: none;">💾 Save</button>
+ <!-- ✅ Edit & Delete Buttons (Only for Admins) -->
+<button id="edit-btn" class="edit-btn" style="display: none;">✏️ Edit</button>
+<button id="save-btn" class="save-btn" style="display: none;">💾 Save</button>
+<button id="delete-btn" class="delete-btn" style="display: none;">🗑️ Delete</button>
 
 
     <script>
@@ -156,10 +157,10 @@ const isAdmin = localStorage.getItem("isAdmin") === "true"; // ✅ Check if user
                 img.src = `http://localhost:5000${post.coverImage}`;
                 img.style.display = "block";
             }
-
-            // ✅ Show Edit Button only for Admin
-            if (isAdmin) {
-                document.getElementById("edit-btn").style.display = "inline-block";
+ // ✅ Show Edit & Delete Buttons Only for Admin
+ if (isAdmin) {
+            document.getElementById("edit-btn").style.display = "inline-block";
+            document.getElementById("delete-btn").style.display = "inline-block";
             }
         }
 
@@ -192,15 +193,32 @@ const isAdmin = localStorage.getItem("isAdmin") === "true"; // ✅ Check if user
 
             if (response.ok) {
                 alert("Blog post updated successfully!");
-                location.reload();  // ✅ Refresh to show the new content
+                window.location.href = "blog.html"; // ✅ Redirect back to blog list
             } else {
                 alert("Error updating blog post!");
             }
         });
 
+        // ✅ DELETE Functionality
+    document.getElementById("delete-btn").addEventListener("click", async () => {
+        const confirmDelete = confirm("Are you sure you want to delete this blog post?");
+        if (!confirmDelete) return;
+
+        const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`, {
+            method: "DELETE"
+        });
+
+        if (response.ok) {
+            alert("Blog post deleted successfully!");
+            window.location.href = "blog.html"; // ✅ Redirect to blog list after deleting
+        } else {
+            alert("Error deleting blog post!");
+        }
+    });
+
         window.onload = loadPost;
 
-        
+
         document.addEventListener("DOMContentLoaded", async function () {
             const urlParams = new URLSearchParams(window.location.search);
             let postId = urlParams.get("id");
