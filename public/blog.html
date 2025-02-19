@@ -235,6 +235,11 @@
     async function fetchBlogs() {
     try {
         const response = await fetch("http://localhost:5000/api/blogs");
+
+        if (!response.ok) {
+            throw new Error(`Server Error: ${response.status}`);
+        }
+        
         const blogs = await response.json();
         const blogList = document.getElementById("blog-list");
         blogList.innerHTML = "";
