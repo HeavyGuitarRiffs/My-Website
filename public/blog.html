@@ -174,7 +174,7 @@
         </ul>
     </nav>
 
-    <div class="blog-container" id="admin-panel" style="display: none;">
+    <div class="blog-container">
         <div class="title-container">Create a New Blog Post</div>
         <div class="blog-form">
             <input type="text" id="blogTitle" placeholder="Enter blog title..." required>
@@ -239,7 +239,7 @@
         if (!response.ok) {
             throw new Error(`Server Error: ${response.status}`);
         }
-        
+
         const blogs = await response.json();
         const blogList = document.getElementById("blog-list");
         blogList.innerHTML = "";
