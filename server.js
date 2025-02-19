@@ -188,6 +188,22 @@ app.delete("/api/blogs/:id", async (req, res) => {
     }
 });
 
+app.patch("/api/blogs/:id", async (req, res) => {
+    try {
+        const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
+
+        if (!updatedBlog) {
+            return res.status(404).json({ error: "Blog not found" });
+        }
+
+        res.json(updatedBlog);
+    } catch (error) {
+        console.error("❌ Error updating blog post:", error);
+        res.status(500).json({ error: "Error updating blog post" });
+    }
+});
+
+
 // ** Start Server **
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
