@@ -232,7 +232,8 @@
     </footer>
     
     <script>
-        
+        const isAdmin = localStorage.getItem("isAdmin") === "true"; // ✅ Define isAdmin globally
+
 
         async function saveBlogPost() {
             const title = document.getElementById("blogTitle").value;
@@ -310,12 +311,13 @@
             }
 
             blogList.innerHTML += `
-                <div class="blog-item">
+                <div class="blog-item" id="blog-${blogId}">
                     <a href="post.html?id=${blogId}" class="thumbnail-container">
                         <img src="${blog.coverImage ? `http://localhost:5000${blog.coverImage}` : 'images/default-thumbnail.jpg'}" class="thumbnail">
                     </a>
                     <h2 class="blog-title"><a href="post.html?id=${blogId}">${blog.title}</a></h2>
                     <p class="meta-info">${formattedDate} | Views: ${blog.views}</p>
+                    ${adminControls}
                 </div>`;
         });
 

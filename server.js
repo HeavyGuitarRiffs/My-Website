@@ -144,18 +144,18 @@ app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
             title,
             content,
             coverImage: coverImagePath,
-            date: new Date().toLocaleString() // ✅ Ensure date is included when creating a post
+            date: new Date().toLocaleString()
         });
 
         await newBlog.save();
         res.status(201).json({
-            id: newBlog._id,
+            id: newBlog._id, // ✅ Ensure frontend gets `id`
             title: newBlog.title,
             content: newBlog.content,
             coverImage: newBlog.coverImage,
             views: newBlog.views,
             createdAt: newBlog.createdAt,
-            date: newBlog.date // ✅ Ensure the date is returned
+            date: newBlog.date
         });
     } catch (error) {
         console.error("❌ Error creating blog post:", error);
@@ -164,24 +164,19 @@ app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
 });
 
 
-
 // 📌 Delete a blog post
 app.delete("/api/blogs/:id", async (req, res) => {
     try {
         const deletedBlog = await Blog.findByIdAndDelete(req.params.id);
-        if (!deletedBlog) {
-            return res.status(404).json({ error: "Blog not found" });
-        }
+        if (!deletedBlog) return res.status(404).json({ error: "Blog not found" });
 
         // Delete associated image file if it exists
         if (deletedBlog.coverImage) {
             const filePath = path.join(__dirname, deletedBlog.coverImage);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
+            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
         }
 
-        res.json({ message: "Blog deleted successfully" });
+        res.json({ message: "Blog deleted successfully", id: req.params.id }); // ✅ Return deleted blog's ID
     } catch (error) {
         console.error("❌ Error deleting blog post:", error);
         res.status(500).json({ error: "Error deleting blog post" });
@@ -190,18 +185,33 @@ app.delete("/api/blogs/:id", async (req, res) => {
 
 app.patch("/api/blogs/:id", async (req, res) => {
     try {
-        const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const { title, content, coverImage } = req.body; // Only allow these fields
+
+        const updatedBlog = await Blog.findByIdAndUpdate(
+            req.params.id,
+            { title, content, coverImage },
+            { new: true }
+        );
 
         if (!updatedBlog) {
             return res.status(404).json({ error: "Blog not found" });
         }
 
-        res.json(updatedBlog);
+        res.json({
+            id: updatedBlog._id, // ✅ Ensure frontend receives `id`
+            title: updatedBlog.title,
+            content: updatedBlog.content,
+            coverImage: updatedBlog.coverImage,
+            views: updatedBlog.views,
+            createdAt: updatedBlog.createdAt,
+            date: updatedBlog.date
+        });
     } catch (error) {
         console.error("❌ Error updating blog post:", error);
         res.status(500).json({ error: "Error updating blog post" });
     }
 });
+
 
 
 // ** Start Server **
