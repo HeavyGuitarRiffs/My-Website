@@ -144,16 +144,26 @@ app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
             title,
             content,
             coverImage: coverImagePath,
-            date: new Date().toLocaleString() // Add date when creating a post
+            date: new Date().toLocaleString() // ✅ Ensure date is included when creating a post
         });
 
         await newBlog.save();
-        res.status(201).json(newBlog);
+        res.status(201).json({
+            id: newBlog._id,
+            title: newBlog.title,
+            content: newBlog.content,
+            coverImage: newBlog.coverImage,
+            views: newBlog.views,
+            createdAt: newBlog.createdAt,
+            date: newBlog.date // ✅ Ensure the date is returned
+        });
     } catch (error) {
         console.error("❌ Error creating blog post:", error);
         res.status(500).json({ error: "Error creating blog post" });
     }
 });
+
+
 
 // 📌 Delete a blog post
 app.delete("/api/blogs/:id", async (req, res) => {
