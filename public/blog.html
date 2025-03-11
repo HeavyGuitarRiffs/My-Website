@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
+
     <style>
         body {
             background-image: url('images/programmer.png'); 
@@ -95,6 +95,7 @@
             object-fit: cover;
             border-radius: 8px;
             cursor: pointer;
+            margin-top: 10px;
         }
 
         .blog-title a {
@@ -152,7 +153,8 @@
         <div class="blog-form">
             <input type="text" id="title" placeholder="Blog Title">
             <textarea id="content" placeholder="Blog Content"></textarea>
-            <input type="file" id="imageUpload" accept="image/*">
+            <input type="file" id="imageUpload" accept="image/*" onchange="previewImage(event)">
+            <img id="imagePreview" class="thumbnail" style="display: none;">
             <button onclick="saveBlog()">Save Blog</button>
         </div>
 
@@ -164,68 +166,49 @@
     </footer>
     
     <script>
-        async function fetchBlogs() {
-            try {
-                const response = await fetch("http://localhost:5000/api/blogs");
-                if (!response.ok) throw new Error("Backend not available");
-                const blogs = await response.json();
-                localStorage.setItem("savedBlogs", JSON.stringify(blogs));
-                displayBlogs(blogs);
-            } catch (error) {
-                console.warn("Using cached blogs due to error:", error);
-                const cachedBlogs = localStorage.getItem("savedBlogs");
-                if (cachedBlogs) {
-                    displayBlogs(JSON.parse(cachedBlogs));
-                } else {
-                    document.getElementById("blog-list").innerHTML = "<p>No blogs available yet.</p>";
-                }
+        function previewImage(event) {
+            const imagePreview = document.getElementById("imagePreview");
+            const file = event.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = "block";
+                };
+                reader.readAsDataURL(file);
             }
         }
 
-        function displayBlogs(blogs) {
-            const blogList = document.getElementById("blog-list");
-            blogList.innerHTML = blogs.map((blog, index) => `
-                <div class="blog-item">
-                    ${blog.image ? `<img src="${blog.image}" class="thumbnail">` : ""}
-                    <h2 class="blog-title">
-                        <a href="blog-post.html?index=${index}">${blog.title}</a>
-                    </h2>
-                    <p class="meta-info">Posted on: ${new Date(blog.createdAt).toLocaleString()}</p>
-                </div>
-            `).join("");
-        }
-
-        async function saveBlog() {
+        function saveBlog() {
             const title = document.getElementById("title").value.trim();
             const content = document.getElementById("content").value.trim();
-            const imageUpload = document.getElementById("imageUpload").files[0];
+            const imageInput = document.getElementById("imageUpload").files[0];
 
             if (!title || !content) {
                 showNotification("⚠️ Title and content are required!", "error");
                 return;
             }
 
-            let imageData = null;
-            if (imageUpload) {
-                const reader = new FileReader();
-                reader.readAsDataURL(imageUpload);
-                reader.onload = () => {
-                    imageData = reader.result;
-                    saveToLocalStorage(title, content, imageData);
-                };
-            } else {
-                saveToLocalStorage(title, content, null);
-            }
-        }
-
-        function saveToLocalStorage(title, content, imageData) {
             let blog = {
                 title,
                 content,
-                image: imageData,
                 createdAt: new Date().toISOString()
             };
 
+            if (imageInput) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    blog.image = e.target.result;
+                    saveToLocalStorage(blog);
+                };
+                reader.readAsDataURL(imageInput);
+            } else {
+                saveToLocalStorage(blog);
+            }
+        }
+
+        function saveToLocalStorage(blog) {
             let savedBlogs = JSON.parse(localStorage.getItem("savedBlogs")) || [];
             savedBlogs.push(blog);
             localStorage.setItem("savedBlogs", JSON.stringify(savedBlogs));
@@ -240,24 +223,39 @@
             }, 1500);
         }
 
+        function displayBlogs(blogs) {
+            const blogList = document.getElementById("blog-list");
+            blogList.innerHTML = blogs.map((blog, index) => `
+                <div class="blog-item">
+                    <h2 class="blog-title">
+                        <a href="blog-post.html?index=${index}">${blog.title}</a>
+                    </h2>
+                    ${blog.image ? `<img src="${blog.image}" class="thumbnail">` : ""}
+                    <p class="meta-info">Posted on: ${new Date(blog.createdAt).toLocaleString()}</p>
+                </div>
+            `).join("");
+        }
+
         function showNotification(message, type = "info") {
             const notification = document.createElement("div");
             notification.textContent = message;
             notification.className = `notification ${type}`;
             document.body.appendChild(notification);
 
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
+            setTimeout(() => notification.remove(), 3000);
         }
 
         function clearForm() {
             document.getElementById("title").value = "";
             document.getElementById("content").value = "";
             document.getElementById("imageUpload").value = "";
+            document.getElementById("imagePreview").style.display = "none";
         }
 
-        window.onload = fetchBlogs;
+        window.onload = () => {
+            const savedBlogs = JSON.parse(localStorage.getItem("savedBlogs")) || [];
+            displayBlogs(savedBlogs);
+        };
     </script>
 </body>
 </html>
