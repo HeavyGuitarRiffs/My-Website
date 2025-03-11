@@ -152,6 +152,7 @@
         <div class="blog-form">
             <input type="text" id="title" placeholder="Blog Title">
             <textarea id="content" placeholder="Blog Content"></textarea>
+            <input type="file" id="imageUpload" accept="image/*">
             <button onclick="saveBlog()">Save Blog</button>
         </div>
 
@@ -185,6 +186,7 @@
             const blogList = document.getElementById("blog-list");
             blogList.innerHTML = blogs.map((blog, index) => `
                 <div class="blog-item">
+                    ${blog.image ? `<img src="${blog.image}" class="thumbnail">` : ""}
                     <h2 class="blog-title">
                         <a href="blog-post.html?index=${index}">${blog.title}</a>
                     </h2>
@@ -196,15 +198,31 @@
         async function saveBlog() {
             const title = document.getElementById("title").value.trim();
             const content = document.getElementById("content").value.trim();
+            const imageUpload = document.getElementById("imageUpload").files[0];
 
             if (!title || !content) {
                 showNotification("⚠️ Title and content are required!", "error");
                 return;
             }
 
+            let imageData = null;
+            if (imageUpload) {
+                const reader = new FileReader();
+                reader.readAsDataURL(imageUpload);
+                reader.onload = () => {
+                    imageData = reader.result;
+                    saveToLocalStorage(title, content, imageData);
+                };
+            } else {
+                saveToLocalStorage(title, content, null);
+            }
+        }
+
+        function saveToLocalStorage(title, content, imageData) {
             let blog = {
                 title,
                 content,
+                image: imageData,
                 createdAt: new Date().toISOString()
             };
 
@@ -236,6 +254,7 @@
         function clearForm() {
             document.getElementById("title").value = "";
             document.getElementById("content").value = "";
+            document.getElementById("imageUpload").value = "";
         }
 
         window.onload = fetchBlogs;
