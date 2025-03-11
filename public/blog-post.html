@@ -44,21 +44,10 @@
             border-radius: 5px;
             font-size: 16px;
         }
-        .edit-button {
-            background: #ffcc00;
-            color: black;
-        }
-        .delete-button {
-            background: #ff4444;
-            color: white;
-        }
-        .save-button {
-            background: #00ff00;
-            color: black;
-        }
-        .hidden {
-            display: none;
-        }
+        .edit-button { background: #ffcc00; color: black; }
+        .delete-button { background: #ff4444; color: white; }
+        .save-button { background: #00ff00; color: black; }
+        .hidden { display: none; }
         .blog-input, .blog-textarea {
             width: 100%;
             padding: 10px;
@@ -89,42 +78,49 @@
     </div>
 
     <script>
+        const API_URL = "https://your-backend-api.com/blogs"; // Replace with your backend URL
         const params = new URLSearchParams(window.location.search);
         const index = params.get("index");
+
         let blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
 
-        const blogTitle = document.getElementById("blog-title");
-        const blogImage = document.getElementById("blog-image");
-        const blogDate = document.getElementById("blog-date");
-        const blogContent = document.getElementById("blog-content");
-        
-        const titleInput = document.getElementById("title-input");
-        const contentInput = document.getElementById("content-input");
-        const imageUpload = document.getElementById("imageUpload");
+        function fetchBlogsFromBackend() {
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(data => {
+                    blogs = data;
+                    localStorage.setItem("savedBlogs", JSON.stringify(blogs));
+                    displayBlog();
+                })
+                .catch(error => console.error("Error fetching blogs:", error));
+        }
 
-        const editButton = document.querySelector(".edit-button");
-        const saveButton = document.querySelector(".save-button");
+        function displayBlog() {
+            if (blogs[index]) {
+                blogTitle.textContent = blogs[index].title;
+                blogImage.src = blogs[index].coverImage || 'images/default-thumbnail.jpg';
+                blogDate.textContent = "Posted on: " + new Date(blogs[index].createdAt).toLocaleString();
+                blogContent.textContent = blogs[index].content;
 
-        if (blogs[index]) {
-            blogTitle.textContent = blogs[index].title;
-            blogImage.src = blogs[index].coverImage || 'images/default-thumbnail.jpg';
-            blogDate.textContent = "Posted on: " + new Date(blogs[index].createdAt).toLocaleString();
-            blogContent.textContent = blogs[index].content;
+                titleInput.value = blogs[index].title;
+                contentInput.value = blogs[index].content;
+            } else {
+                document.body.innerHTML = "<h2>Blog not found.</h2><a href='blog.html' class='back-link'>← Back to Blog</a>";
+            }
+        }
 
-            titleInput.value = blogs[index].title;
-            contentInput.value = blogs[index].content;
+        if (blogs.length === 0) {
+            fetchBlogsFromBackend();
         } else {
-            document.body.innerHTML = "<h2>Blog not found.</h2><a href='blog.html' class='back-link'>← Back to Blog</a>";
+            displayBlog();
         }
 
         function editBlog() {
             blogTitle.classList.add("hidden");
             blogContent.classList.add("hidden");
-            
             titleInput.classList.remove("hidden");
             contentInput.classList.remove("hidden");
             imageUpload.classList.remove("hidden");
-            
             editButton.classList.add("hidden");
             saveButton.classList.remove("hidden");
         }
@@ -145,24 +141,33 @@
                 localStorage.setItem("savedBlogs", JSON.stringify(blogs));
             }
 
+            fetch(`${API_URL}/${blogs[index].id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(blogs[index])
+            }).catch(error => console.error("Error updating blog:", error));
+
             blogTitle.textContent = titleInput.value;
             blogContent.textContent = contentInput.value;
 
             blogTitle.classList.remove("hidden");
             blogContent.classList.remove("hidden");
-            
             titleInput.classList.add("hidden");
             contentInput.classList.add("hidden");
             imageUpload.classList.add("hidden");
-            
             editButton.classList.remove("hidden");
             saveButton.classList.add("hidden");
         }
 
         function deleteBlog() {
             if (confirm("Are you sure you want to delete this blog post?")) {
+                const blogId = blogs[index].id;
                 blogs.splice(index, 1);
                 localStorage.setItem("savedBlogs", JSON.stringify(blogs));
+
+                fetch(`${API_URL}/${blogId}`, { method: "DELETE" })
+                .catch(error => console.error("Error deleting blog:", error));
+
                 window.location.href = "blog.html";
             }
         }
