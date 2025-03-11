@@ -72,36 +72,6 @@
             box-shadow: 0 4px 6px rgba(0, 255, 0, 0.4);
         }
 
-        .blog-form {
-            margin-top: 50px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .blog-form input, .blog-form textarea {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        .blog-form button {
-            padding: 12px;
-            background: #00ff00;
-            color: black;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 18px;
-            font-weight: bold;
-            transition: 0.3s;
-            text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
-        }
-        .blog-form button:hover {
-            background: #009900;
-            color: white;
-        }
-
         .blog-item {
             background: rgba(255, 255, 255, 0.1);
             padding: 15px;
@@ -109,12 +79,7 @@
             border-radius: 8px;
             text-align: center;
             position: relative;
-        }
-
-        .thumbnail-container {
-            position: relative;
-            display: block;
-            text-decoration: none;
+            cursor: pointer;
         }
 
         .thumbnail {
@@ -123,13 +88,6 @@
             object-fit: cover;
             border-radius: 8px;
             display: block;
-        }
-
-        .blog-title {
-            margin-top: 10px;
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
         }
 
         .blog-title a {
@@ -149,6 +107,42 @@
             color: #ccc;
         }
 
+        .edit-delete-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .edit-btn, .delete-btn {
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .edit-btn {
+            background: #00ff00;
+            color: black;
+        }
+
+        .edit-btn:hover {
+            background: #009900;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #ff0000;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #cc0000;
+        }
+
         .social-footer {
             background: #222;
             padding: 20px;
@@ -160,48 +154,9 @@
             color: white;
             font-size: 14px;
         }
-
-        .edit-btn, .delete-btn, .save-btn {
-    margin: 5px;
-    padding: 5px 10px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-    border-radius: 5px;
-}
-
-.edit-btn {
-    background-color: #007bff;
-    color: white;
-}
-
-.delete-btn {
-    background-color: #ff4d4d;
-    color: white;
-}
-
-.save-btn {
-    background-color: #28a745;
-    color: white;
-}
-
-.edit-btn:hover {
-    background-color: #0056b3;
-}
-
-.delete-btn:hover {
-    background-color: #cc0000;
-}
-
-.save-btn:hover {
-    background-color: #218838;
-}
-
     </style>
 </head>
 <body>
-    
     <nav class="main-navbar">
         <ul>
             <li><a href="index.html">Home</a></li>
@@ -213,16 +168,6 @@
     </nav>
 
     <div class="blog-container">
-        <div class="title-container">Create a New Blog Post</div>
-        <div class="blog-form">
-            <input type="text" id="blogTitle" placeholder="Enter blog title..." required>
-            <textarea id="blogContent" placeholder="Write your blog post here..."></textarea>
-            <input type="file" id="coverImage" accept="image/*">
-            <button onclick="saveBlogPost()">Save Post</button>
-        </div>
-    </div>
-
-    <div class="blog-container">
         <h1>Saved Blog Posts</h1>
         <div id="blog-list"></div>
     </div>
@@ -232,103 +177,75 @@
     </footer>
     
     <script>
-        const isAdmin = localStorage.getItem("isAdmin") === "true"; // ✅ Define isAdmin globally
+        let selectedPost = null;
 
+        async function fetchBlogs() {
+            try {
+                const response = await fetch("http://localhost:5000/api/blogs");
+                if (!response.ok) throw new Error("Backend not available");
+                const blogs = await response.json();
+                
+                // Save data to localStorage for caching
+                localStorage.setItem("savedBlogs", JSON.stringify(blogs));
+                displayBlogs(blogs);
+            } catch (error) {
+                console.warn("Using cached blogs due to error:", error);
 
-        async function saveBlogPost() {
-            const title = document.getElementById("blogTitle").value;
-            const content = document.getElementById("blogContent").value;
-            const coverImageInput = document.getElementById("coverImage");
+                // Load cached data if available
+                const cachedBlogs = localStorage.getItem("savedBlogs");
+                if (cachedBlogs && JSON.parse(cachedBlogs).length > 0) {
+                    displayBlogs(JSON.parse(cachedBlogs));
+                } else {
+                    document.getElementById("blog-list").innerHTML = "<p>No blogs available yet.</p>";
+                }
+            }
+        }
 
-            if (!title || !content) {
-                alert("Title and Content are required!");
+        function displayBlogs(blogs) {
+            const blogList = document.getElementById("blog-list");
+
+            if (!blogs.length) {
+                blogList.innerHTML = "<p>No blog posts available.</p>";
                 return;
             }
 
-            const formData = new FormData();
-            formData.append("title", title);
-            formData.append("content", content);
+            blogList.innerHTML = blogs.map(blog => `
+                <div class="blog-item" onclick="toggleEditButtons('${blog.id}')">
+                    <img src="${blog.coverImage || 'images/default-thumbnail.jpg'}" class="thumbnail">
+                    <h2 class="blog-title"><a href="#">${blog.title}</a></h2>
+                    <p class="meta-info">${new Date(blog.createdAt).toLocaleDateString()}</p>
+                    <div id="buttons-${blog.id}" class="edit-delete-buttons">
+                        <button class="edit-btn" onclick="editPost(event, '${blog.id}')">Edit</button>
+                        <button class="delete-btn" onclick="deletePost(event, '${blog.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join("");
+        }
 
-            if (coverImageInput.files.length > 0) {
-                formData.append("coverImage", coverImageInput.files[0]);
-            }
-
-            const response = await fetch("http://localhost:5000/api/blogs", {
-                method: "POST",
-                body: formData
-            });
-
-            if (response.ok) {
-                alert("Blog post saved successfully!");
-                fetchBlogs();
+        function toggleEditButtons(postId) {
+            if (selectedPost === postId) {
+                document.getElementById(`buttons-${postId}`).style.display = "none";
+                selectedPost = null;
             } else {
-                alert("Error saving blog post!");
+                if (selectedPost) {
+                    document.getElementById(`buttons-${selectedPost}`).style.display = "none";
+                }
+                document.getElementById(`buttons-${postId}`).style.display = "flex";
+                selectedPost = postId;
             }
         }
 
-        
-        window.onload = () => {
-    fetchBlogs(); // ✅ Loads blogs immediately on page load
-};
-
-
-    async function fetchBlogs() {
-    try {
-        const response = await fetch("http://localhost:5000/api/blogs");
-
-        if (!response.ok) {
-            throw new Error(`Server Error: ${response.status}`);
+        function editPost(event, postId) {
+            event.stopPropagation();
+            alert(`Editing post: ${postId}`);
         }
 
-        const blogs = await response.json();
-        const blogList = document.getElementById("blog-list");
-        blogList.innerHTML = "";
+        function deletePost(event, postId) {
+            event.stopPropagation();
+            alert(`Deleting post: ${postId}`);
+        }
 
-        blogs.forEach(blog => {
-            console.log("🔍 Checking Blog Data:", blog);
-
-            const blogId = blog.id || blog._id;
-            if (!blogId) {
-                console.warn("⚠️ Missing Blog ID - Skipping this blog:", blog);
-                return;
-            }
-
-            const formattedDate = blog.createdAt
-                ? new Date(blog.createdAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric"
-                  })
-                : "Unknown Date";
-
-
-            let adminControls = "";
-            if (isAdmin) {
-                adminControls = `
-                    <button onclick="editBlog('${blogId}')" class="edit-btn">✏️ Edit</button>
-                    <button onclick="deleteBlog('${blogId}')" class="delete-btn">🗑️ Delete</button>
-                `;
-            }
-
-            blogList.innerHTML += `
-                <div class="blog-item" id="blog-${blogId}">
-                    <a href="post.html?id=${blogId}" class="thumbnail-container">
-                        <img src="${blog.coverImage ? `http://localhost:5000${blog.coverImage}` : 'images/default-thumbnail.jpg'}" class="thumbnail">
-                    </a>
-                    <h2 class="blog-title"><a href="post.html?id=${blogId}">${blog.title}</a></h2>
-                    <p class="meta-info">${formattedDate} | Views: ${blog.views}</p>
-                    ${adminControls}
-                </div>`;
-        });
-
-    } catch (error) {
-        console.error("❌ Error fetching blogs:", error);
-        document.getElementById("blog-list").innerHTML = "<p>Error loading blog posts.</p>";
-    }
-}
-
-</script>
-
+        window.onload = fetchBlogs;
+    </script>
 </body>
 </html>
-
