@@ -82,13 +82,11 @@
             border-radius: 5px;
         }
 
-        .thumbnail {
-            width: 100%;
-            max-height: 250px;
-            object-fit: cover;
+        .blog-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
             border-radius: 8px;
-            display: block;
-            cursor: pointer;
+            margin-top: 15px;
         }
 
         .blog-title a {
@@ -108,24 +106,26 @@
             color: #ccc;
         }
 
-        .image-preview {
-            max-width: 100%;
-            max-height: 250px;
-            margin-top: 10px;
-            border-radius: 8px;
-            display: none;
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #00ff00;
+            color: black;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            animation: fadeOut 3s ease-in-out forwards;
         }
 
-        .social-footer {
-            background: #222;
-            padding: 20px;
-            text-align: center;
-            margin-top: 40px;
-            box-shadow: 0 -4px 6px rgba(0, 255, 0, 0.3);
-        }
-        .social-footer p {
-            color: white;
-            font-size: 14px;
+        .notification.error { background: red; color: white; }
+        .notification.warning { background: orange; color: black; }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-10px); }
         }
     </style>
 </head>
@@ -144,9 +144,7 @@
         <div class="blog-form">
             <input type="text" id="title" placeholder="Blog Title">
             <textarea id="content" placeholder="Blog Content"></textarea>
-            <input type="file" id="imageUpload" accept="image/*" onchange="previewImage(event)">
-            <img id="imagePreview" class="image-preview">
-            <button onclick="saveBlog()">Save Blog</button>
+            <button onclick="saveBlogPost()">Save Blog</button>
         </div>
 
         <div id="blog-list"></div>
@@ -157,6 +155,8 @@
     </footer>
     
     <script>
+        document.addEventListener("DOMContentLoaded", fetchBlogs);
+
         async function fetchBlogs() {
             try {
                 const response = await fetch("http://localhost:5000/api/blogs");
@@ -177,71 +177,43 @@
 
         function displayBlogs(blogs) {
             const blogList = document.getElementById("blog-list");
-            blogList.innerHTML = blogs.map((blog, index) => `
-                <div class="blog-item">
-                    <a href="blog-post.html?index=${index}">
-                        <img src="${blog.coverImage || 'images/default-thumbnail.jpg'}" class="thumbnail">
-                    </a>
-                    <h2 class="blog-title">
-                        <a href="blog-post.html?index=${index}">${blog.title}</a>
-                    </h2>
-                    <p class="meta-info">Posted on: ${new Date(blog.createdAt).toLocaleString()}</p>
-                </div>
-            `).join("");
+            blogList.innerHTML = blogs.length 
+                ? blogs.map((blog, index) => `
+                    <div class="blog-item">
+                        <h2 class="blog-title">
+                            <a href="blog-post.html?index=${index}">${blog.title}</a>
+                        </h2>
+                        <p class="meta-info">Posted on: ${new Date(blog.createdAt).toLocaleString()}</p>
+                    </div>
+                `).join("")
+                : "<p>No saved blogs.</p>";
         }
 
-        async function saveBlog() {
-            const title = document.getElementById("title").value;
-            const content = document.getElementById("content").value;
-            const imageUpload = document.getElementById("imageUpload");
-            const imagePreview = document.getElementById("imagePreview").src;
+        function saveBlogPost() {
+            const title = document.getElementById("title").value.trim();
+            const content = document.getElementById("content").value.trim();
 
             if (!title || !content) {
-                alert("Title and content are required!");
+                showNotification("⚠️ Title and content are required!", "error");
                 return;
             }
 
-            let blog = {
-                title,
-                content,
-                coverImage: imagePreview || "images/default-thumbnail.jpg",
-                createdAt: new Date().toISOString()
-            };
-
-            let savedBlogs = JSON.parse(localStorage.getItem("savedBlogs")) || [];
+            const blog = { title, content, createdAt: new Date().toISOString() };
+            const savedBlogs = JSON.parse(localStorage.getItem("savedBlogs")) || [];
             savedBlogs.push(blog);
             localStorage.setItem("savedBlogs", JSON.stringify(savedBlogs));
 
             displayBlogs(savedBlogs);
-
-            // Attempt to save to backend (async)
-            try {
-                const response = await fetch("http://localhost:5000/api/blogs", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(blog)
-                });
-                if (!response.ok) throw new Error("Failed to save to backend");
-            } catch (error) {
-                console.warn("Failed to sync with backend:", error);
-            }
+            clearForm();
+            showNotification("✅ Blog post saved successfully!", "success");
         }
 
-        function previewImage(event) {
-            const imagePreview = document.getElementById("imagePreview");
-            const file = event.target.files[0];
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = "block";
-                };
-                reader.readAsDataURL(file);
-            }
+        function showNotification(message, type = "info") {
+            const notification = document.createElement("div");
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
         }
 
-        window.onload = fetchBlogs;
-    </script>
-</body>
-</html>
+    
