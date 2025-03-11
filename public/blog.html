@@ -56,14 +56,30 @@
             position: relative;
         }
 
-        .blog-item {
+        /* Blog Form */
+        .blog-form {
             background: rgba(255, 255, 255, 0.1);
             padding: 15px;
-            margin: 20px 0;
             border-radius: 8px;
-            text-align: center;
-            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .blog-form input, .blog-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .blog-form button {
+            margin-top: 10px;
+            background: #00ff00;
+            color: black;
+            padding: 10px 15px;
+            border: none;
             cursor: pointer;
+            border-radius: 5px;
         }
 
         .thumbnail {
@@ -115,6 +131,15 @@
 
     <div class="blog-container">
         <h1>Saved Blog Posts</h1>
+        
+        <!-- Blog Form -->
+        <div class="blog-form">
+            <input type="text" id="title" placeholder="Blog Title">
+            <textarea id="content" placeholder="Blog Content"></textarea>
+            <input type="file" id="imageUpload">
+            <button onclick="saveBlog()">Save Blog</button>
+        </div>
+
         <div id="blog-list"></div>
     </div>
 
@@ -154,6 +179,30 @@
                     <p class="meta-info">Posted on: ${new Date(blog.createdAt).toLocaleString()}</p>
                 </div>
             `).join("");
+        }
+
+        function saveBlog() {
+            const title = document.getElementById("title").value;
+            const content = document.getElementById("content").value;
+            const imageUpload = document.getElementById("imageUpload");
+
+            if (!title || !content) {
+                alert("Title and content are required!");
+                return;
+            }
+
+            let blog = {
+                title,
+                content,
+                coverImage: imageUpload.files.length ? URL.createObjectURL(imageUpload.files[0]) : "images/default-thumbnail.jpg",
+                createdAt: new Date().toISOString()
+            };
+
+            let savedBlogs = JSON.parse(localStorage.getItem("savedBlogs")) || [];
+            savedBlogs.push(blog);
+            localStorage.setItem("savedBlogs", JSON.stringify(savedBlogs));
+
+            displayBlogs(savedBlogs);
         }
 
         window.onload = fetchBlogs;
