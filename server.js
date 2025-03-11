@@ -11,7 +11,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ** Middleware **
-app.use(express.json());
+// ✅ Increase request size limit
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
 app.use(cors({ origin: "*" })); // Allow all origins for testing
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded images
 app.use(express.static(path.join(__dirname, "public"))); // Serve static files
