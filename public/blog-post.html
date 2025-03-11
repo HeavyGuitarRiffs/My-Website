@@ -1,48 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blog Post</title>
-  <link rel="stylesheet" href="styles/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Blog Post</title>
+    <style>
+        body {
+            background: #222;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .blog-container {
+            max-width: 800px;
+            margin: auto;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .thumbnail {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #00ff00;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-link:hover {
+            color: #009900;
+        }
+    </style>
 </head>
 <body>
+    <div class="blog-container">
+        <img id="blog-image" class="thumbnail">
+        <h1 id="blog-title"></h1>
+        <p id="blog-date"></p>
+        <p id="blog-content"></p>
+        <a href="blog.html" class="back-link">← Back to Blog</a>
+    </div>
 
-<nav class="main-navbar">
-  <ul>
-    <li><a href="index.html">Home</a></li>
-    <li><a href="blog.html">Blog</a></li>
-  </ul>
-</nav>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const index = params.get("index");
+        const blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
 
-<div class="post-container">
-  <h1 id="post-title">Loading...</h1>
-  <p id="post-date"></p>
-  <img id="post-image" class="cover-img" src="" alt="Cover Image">
-  <p id="post-content"></p>
-  <p>👁 Views: <span id="post-views"></span></p>
-</div>
-
-<script>
-  document.addEventListener("DOMContentLoaded", async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const blogId = urlParams.get("id");
-
-    if (!blogId) {
-      document.getElementById("post-title").textContent = "Post Not Found";
-      return;
-    }
-
-    const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`);
-    const blog = await response.json();
-
-    document.getElementById("post-title").textContent = blog.title;
-    document.getElementById("post-date").textContent = `Published on ${new Date(blog.createdAt).toDateString()}`;
-    document.getElementById("post-image").src = blog.coverImage;
-    document.getElementById("post-content").textContent = blog.content;
-    document.getElementById("post-views").textContent = blog.views;
-  });
-</script>
-
+        if (blogs[index]) {
+            document.getElementById("blog-title").textContent = blogs[index].title;
+            document.getElementById("blog-image").src = blogs[index].coverImage || 'images/default-thumbnail.jpg';
+            document.getElementById("blog-date").textContent = "Posted on: " + new Date(blogs[index].createdAt).toLocaleString();
+            document.getElementById("blog-content").textContent = blogs[index].content;
+        } else {
+            document.body.innerHTML = "<h2>Blog not found.</h2><a href='blog.html' class='back-link'>← Back to Blog</a>";
+        }
+    </script>
 </body>
 </html>

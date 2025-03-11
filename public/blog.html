@@ -72,6 +72,7 @@
             object-fit: cover;
             border-radius: 8px;
             display: block;
+            cursor: pointer;
         }
 
         .blog-title a {
@@ -91,38 +92,6 @@
             color: #ccc;
         }
 
-        .form-container {
-            margin-top: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 20px;
-            border-radius: 8px;
-        }
-
-        .form-container input,
-        .form-container textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border: none;
-        }
-
-        .form-container button {
-            background: #00ff00;
-            color: black;
-            padding: 10px;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-
-        .form-container button:hover {
-            background: #009900;
-            color: white;
-        }
-
         .social-footer {
             background: #222;
             padding: 20px;
@@ -140,22 +109,9 @@
     <nav class="main-navbar">
         <ul>
             <li><a href="index.html">Home</a></li>
-            <li><a href="Atem Ind LLC.html">ATI LLC</a></li>
             <li><a href="blog.html">Blog</a></li>
-            <li><a href="contact.html">Contact</a></li>
-            <li><a href="portfolio.html">Portfolio</a></li>
         </ul>
     </nav>
-
-    <!-- Blog Form at the Top -->
-    <div class="form-container">
-        <h2>Create a Blog</h2>
-        <input type="text" id="blog-title" placeholder="Blog Title">
-        <input type="text" id="blog-image-url" placeholder="Image URL (optional)">
-        <input type="file" id="blog-image-upload" accept="image/*">
-        <textarea id="blog-content" placeholder="Write your blog content..."></textarea>
-        <button onclick="saveBlog()">Save Blog</button>
-    </div>
 
     <div class="blog-container">
         <h1>Saved Blog Posts</h1>
@@ -187,44 +143,17 @@
 
         function displayBlogs(blogs) {
             const blogList = document.getElementById("blog-list");
-            blogList.innerHTML = blogs.map(blog => `
+            blogList.innerHTML = blogs.map((blog, index) => `
                 <div class="blog-item">
-                    <img src="${blog.coverImage || 'images/default-thumbnail.jpg'}" class="thumbnail">
-                    <h2 class="blog-title">${blog.title}</h2>
-                    <p>${blog.content || ''}</p>
+                    <a href="blog-post.html?index=${index}">
+                        <img src="${blog.coverImage || 'images/default-thumbnail.jpg'}" class="thumbnail">
+                    </a>
+                    <h2 class="blog-title">
+                        <a href="blog-post.html?index=${index}">${blog.title}</a>
+                    </h2>
+                    <p class="meta-info">Posted on: ${new Date(blog.createdAt).toLocaleString()}</p>
                 </div>
             `).join("");
-        }
-
-        function saveBlog() {
-            const title = document.getElementById("blog-title").value;
-            const imageUrl = document.getElementById("blog-image-url").value;
-            const imageUpload = document.getElementById("blog-image-upload").files[0];
-            const content = document.getElementById("blog-content").value;
-
-            if (!title || !content) {
-                alert("Please enter a title and content.");
-                return;
-            }
-
-            if (imageUpload) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const imageBase64 = event.target.result;
-                    storeBlog(title, content, imageBase64);
-                };
-                reader.readAsDataURL(imageUpload);
-            } else {
-                storeBlog(title, content, imageUrl);
-            }
-        }
-
-        function storeBlog(title, content, image) {
-            const newBlog = { title, coverImage: image, content };
-            const blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
-            blogs.push(newBlog);
-            localStorage.setItem("savedBlogs", JSON.stringify(blogs));
-            displayBlogs(blogs);
         }
 
         window.onload = fetchBlogs;
