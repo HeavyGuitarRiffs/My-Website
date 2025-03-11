@@ -89,6 +89,14 @@
             margin-top: 15px;
         }
 
+        .thumbnail {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
         .blog-title a {
             color: #00ff00;
             text-decoration: none;
@@ -144,7 +152,7 @@
         <div class="blog-form">
             <input type="text" id="title" placeholder="Blog Title">
             <textarea id="content" placeholder="Blog Content"></textarea>
-            <button onclick="saveBlogPost()">Save Blog</button>
+            <button onclick="saveBlog()">Save Blog</button>
         </div>
 
         <div id="blog-list"></div>
@@ -155,8 +163,6 @@
     </footer>
     
     <script>
-        document.addEventListener("DOMContentLoaded", fetchBlogs);
-
         async function fetchBlogs() {
             try {
                 const response = await fetch("http://localhost:5000/api/blogs");
@@ -177,19 +183,17 @@
 
         function displayBlogs(blogs) {
             const blogList = document.getElementById("blog-list");
-            blogList.innerHTML = blogs.length 
-                ? blogs.map((blog, index) => `
-                    <div class="blog-item">
-                        <h2 class="blog-title">
-                            <a href="blog-post.html?index=${index}">${blog.title}</a>
-                        </h2>
-                        <p class="meta-info">Posted on: ${new Date(blog.createdAt).toLocaleString()}</p>
-                    </div>
-                `).join("")
-                : "<p>No saved blogs.</p>";
+            blogList.innerHTML = blogs.map((blog, index) => `
+                <div class="blog-item">
+                    <h2 class="blog-title">
+                        <a href="blog-post.html?index=${index}">${blog.title}</a>
+                    </h2>
+                    <p class="meta-info">Posted on: ${new Date(blog.createdAt).toLocaleString()}</p>
+                </div>
+            `).join("");
         }
 
-        function saveBlogPost() {
+        async function saveBlog() {
             const title = document.getElementById("title").value.trim();
             const content = document.getElementById("content").value.trim();
 
@@ -198,14 +202,24 @@
                 return;
             }
 
-            const blog = { title, content, createdAt: new Date().toISOString() };
-            const savedBlogs = JSON.parse(localStorage.getItem("savedBlogs")) || [];
+            let blog = {
+                title,
+                content,
+                createdAt: new Date().toISOString()
+            };
+
+            let savedBlogs = JSON.parse(localStorage.getItem("savedBlogs")) || [];
             savedBlogs.push(blog);
             localStorage.setItem("savedBlogs", JSON.stringify(savedBlogs));
 
             displayBlogs(savedBlogs);
             clearForm();
+
             showNotification("✅ Blog post saved successfully!", "success");
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         }
 
         function showNotification(message, type = "info") {
@@ -213,7 +227,18 @@
             notification.textContent = message;
             notification.className = `notification ${type}`;
             document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
         }
 
-    
+        function clearForm() {
+            document.getElementById("title").value = "";
+            document.getElementById("content").value = "";
+        }
+
+        window.onload = fetchBlogs;
+    </script>
+</body>
+</html>
