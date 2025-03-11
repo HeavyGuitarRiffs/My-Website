@@ -154,6 +154,30 @@
             color: white;
             font-size: 14px;
         }
+
+        .form-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .form-container input, .form-container textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .form-container button {
+            background: #00ff00;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -172,28 +196,30 @@
         <div id="blog-list"></div>
     </div>
 
+    <div class="form-container">
+        <h2>Create a New Blog</h2>
+        <input type="text" id="blog-title" placeholder="Blog Title">
+        <input type="text" id="blog-image" placeholder="Image URL (optional)">
+        <textarea id="blog-content" placeholder="Write your blog content..."></textarea>
+        <button onclick="saveBlog()">Save Blog</button>
+    </div>
+
     <footer class="social-footer">
         <p>All Rights Reserved © 2025</p>
     </footer>
     
     <script>
-        let selectedPost = null;
-
         async function fetchBlogs() {
             try {
                 const response = await fetch("http://localhost:5000/api/blogs");
                 if (!response.ok) throw new Error("Backend not available");
                 const blogs = await response.json();
-                
-                // Save data to localStorage for caching
                 localStorage.setItem("savedBlogs", JSON.stringify(blogs));
                 displayBlogs(blogs);
             } catch (error) {
                 console.warn("Using cached blogs due to error:", error);
-
-                // Load cached data if available
                 const cachedBlogs = localStorage.getItem("savedBlogs");
-                if (cachedBlogs && JSON.parse(cachedBlogs).length > 0) {
+                if (cachedBlogs) {
                     displayBlogs(JSON.parse(cachedBlogs));
                 } else {
                     document.getElementById("blog-list").innerHTML = "<p>No blogs available yet.</p>";
@@ -203,46 +229,24 @@
 
         function displayBlogs(blogs) {
             const blogList = document.getElementById("blog-list");
-
-            if (!blogs.length) {
-                blogList.innerHTML = "<p>No blog posts available.</p>";
-                return;
-            }
-
             blogList.innerHTML = blogs.map(blog => `
-                <div class="blog-item" onclick="toggleEditButtons('${blog.id}')">
+                <div class="blog-item">
                     <img src="${blog.coverImage || 'images/default-thumbnail.jpg'}" class="thumbnail">
-                    <h2 class="blog-title"><a href="#">${blog.title}</a></h2>
-                    <p class="meta-info">${new Date(blog.createdAt).toLocaleDateString()}</p>
-                    <div id="buttons-${blog.id}" class="edit-delete-buttons">
-                        <button class="edit-btn" onclick="editPost(event, '${blog.id}')">Edit</button>
-                        <button class="delete-btn" onclick="deletePost(event, '${blog.id}')">Delete</button>
-                    </div>
+                    <h2 class="blog-title">${blog.title}</h2>
+                    <p>${blog.content || ''}</p>
                 </div>
             `).join("");
         }
 
-        function toggleEditButtons(postId) {
-            if (selectedPost === postId) {
-                document.getElementById(`buttons-${postId}`).style.display = "none";
-                selectedPost = null;
-            } else {
-                if (selectedPost) {
-                    document.getElementById(`buttons-${selectedPost}`).style.display = "none";
-                }
-                document.getElementById(`buttons-${postId}`).style.display = "flex";
-                selectedPost = postId;
-            }
-        }
-
-        function editPost(event, postId) {
-            event.stopPropagation();
-            alert(`Editing post: ${postId}`);
-        }
-
-        function deletePost(event, postId) {
-            event.stopPropagation();
-            alert(`Deleting post: ${postId}`);
+        function saveBlog() {
+            const title = document.getElementById("blog-title").value;
+            const image = document.getElementById("blog-image").value;
+            const content = document.getElementById("blog-content").value;
+            const newBlog = { title, coverImage: image, content };
+            const blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
+            blogs.push(newBlog);
+            localStorage.setItem("savedBlogs", JSON.stringify(blogs));
+            displayBlogs(blogs);
         }
 
         window.onload = fetchBlogs;
