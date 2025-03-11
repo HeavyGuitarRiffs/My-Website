@@ -56,8 +56,43 @@
             position: relative;
         }
 
+        .blog-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .thumbnail {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            display: block;
+        }
+
+        .blog-title a {
+            color: #00ff00;
+            text-decoration: none;
+            transition: 0.3s;
+            display: inline-block;
+        }
+
+        .blog-title a:hover {
+            color: #009900;
+        }
+
+        .meta-info {
+            font-size: 14px;
+            margin-top: 5px;
+            color: #ccc;
+        }
+
         .form-container {
-            margin-bottom: 20px;
+            margin-top: 20px;
             background: rgba(255, 255, 255, 0.2);
             padding: 20px;
             border-radius: 8px;
@@ -88,40 +123,6 @@
             color: white;
         }
 
-        .blog-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .thumbnail {
-            width: 100%;
-            max-height: 250px;
-            object-fit: cover;
-            border-radius: 8px;
-            display: block;
-        }
-
-        .blog-title a {
-            color: #00ff00;
-            text-decoration: none;
-            transition: 0.3s;
-            display: inline-block;
-        }
-
-        .blog-title a:hover {
-            color: #009900;
-        }
-
-        .meta-info {
-            font-size: 14px;
-            margin-top: 5px;
-            color: #ccc;
-        }
-
         .social-footer {
             background: #222;
             padding: 20px;
@@ -146,16 +147,17 @@
         </ul>
     </nav>
 
-    <div class="blog-container">
-        <!-- 🛠 Blog Creation Form is now on top! -->
-        <div class="form-container">
-            <h2>Create a Blog</h2>
-            <input type="text" id="blog-title" placeholder="Blog Title">
-            <input type="text" id="blog-image" placeholder="Image URL (optional)">
-            <textarea id="blog-content" placeholder="Write your blog content..."></textarea>
-            <button onclick="saveBlog()">Save Blog</button>
-        </div>
+    <!-- Blog Form at the Top -->
+    <div class="form-container">
+        <h2>Create a Blog</h2>
+        <input type="text" id="blog-title" placeholder="Blog Title">
+        <input type="text" id="blog-image-url" placeholder="Image URL (optional)">
+        <input type="file" id="blog-image-upload" accept="image/*">
+        <textarea id="blog-content" placeholder="Write your blog content..."></textarea>
+        <button onclick="saveBlog()">Save Blog</button>
+    </div>
 
+    <div class="blog-container">
         <h1>Saved Blog Posts</h1>
         <div id="blog-list"></div>
     </div>
@@ -196,14 +198,28 @@
 
         function saveBlog() {
             const title = document.getElementById("blog-title").value;
-            const image = document.getElementById("blog-image").value;
+            const imageUrl = document.getElementById("blog-image-url").value;
+            const imageUpload = document.getElementById("blog-image-upload").files[0];
             const content = document.getElementById("blog-content").value;
 
             if (!title || !content) {
-                alert("Title and Content are required!");
+                alert("Please enter a title and content.");
                 return;
             }
 
+            if (imageUpload) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imageBase64 = event.target.result;
+                    storeBlog(title, content, imageBase64);
+                };
+                reader.readAsDataURL(imageUpload);
+            } else {
+                storeBlog(title, content, imageUrl);
+            }
+        }
+
+        function storeBlog(title, content, image) {
             const newBlog = { title, coverImage: image, content };
             const blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
             blogs.push(newBlog);
