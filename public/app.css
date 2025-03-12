@@ -11,6 +11,30 @@
     color: white;
   }
   
+    /* Home Page */
+.home {
+  background-image: url('images/bitcoinhome.jpg');
+}
+
+/* About Page */
+.about {
+  background-image: url('images/annakemonotiger.jpg'); /* Change to actual image path */
+}
+
+/* Contact Page */
+.contact {
+  background-image: url('images/ty69kjub.jpg'); /* Change to actual image path */
+}
+
+/* Blog Page */
+.blog {
+  background-image: url('images/uzbekistan-flag.jpg'); /* Change to actual image path */
+}
+
+/* Portfolio Page */
+.portfolio {
+  background-image: url('images/annatigersnooze.jpg'); /* Change to actual image path */
+}
 
   /* 🔹 Main Navbar */
 .main-navbar {
