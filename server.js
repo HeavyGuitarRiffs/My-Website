@@ -23,8 +23,9 @@ if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 app.use((req, res, next) => {
     res.setHeader(
         "Content-Security-Policy",
-        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://thorough-radiance-production.up.railway.app; object-src 'none';"
+        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://modern-rise-production.up.railway.app; object-src 'none';"
     );
+    
     next();
 });
 
