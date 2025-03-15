@@ -11,7 +11,11 @@ const PORT = process.env.PORT || 5000;
 
 // ** Middleware **
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: "*", // Allow all origins (or specify your frontend URL)
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type"]
+}));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded images
 app.use(express.static(path.join(__dirname, "public"))); // Serve static files
 
@@ -83,6 +87,7 @@ const upload = multer({
 // 📌 Get all blog posts
 app.get("/api/blogs", async (req, res) => {
     try {
+        console.log("Fetching blog posts...");
         const blogs = await Blog.find().sort({ createdAt: -1 });
 
         // ✅ Ensure each blog object contains `_id`
@@ -108,7 +113,7 @@ app.get("/api/blogs/:id", async (req, res) => {
     try {
         const blog = await Blog.findById(req.params.id);
         if (!blog) return res.status(404).json({ error: "Post not found" });
-        res.json(blog);
+        
    
         blog.views += 1;
         await blog.save();
