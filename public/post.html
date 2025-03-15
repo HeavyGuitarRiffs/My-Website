@@ -130,101 +130,100 @@
 <button id="delete-btn" class="delete-btn" style="display: none;">🗑️ Delete</button>
 
 
-<script>
-    const isAdmin = localStorage.getItem("isAdmin") === "true"; // ✅ Check if user is admin
-    
-    const params = new URLSearchParams(window.location.search);
-    const blogId = params.get("id");
-    
-    console.log("Fetching blog with ID:", blogId); // ✅ Debugging ID
-    
-    async function loadPost() {
-        if (!blogId) {
-            document.body.innerHTML = "<h2>Blog post not found.</h2>";
-            return;
-        }
-    
-        try {
-            const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`);
-            if (!response.ok) throw new Error("Post not found");
-    
-            const post = await response.json();
-    
-            // Save in localStorage to persist across refreshes
-            localStorage.setItem(`blog-${blogId}`, JSON.stringify(post));
-    
-            // ✅ Display post details
-            document.getElementById("blog-title").innerText = post.title;
-            document.getElementById("blog-date").innerText = new Date(post.date).toLocaleDateString();
-            document.getElementById("blog-content").innerText = post.content;
-            document.getElementById("blog-views").innerText = `Views: ${post.views}`;
-    
-            if (post.coverImage) {
-                document.getElementById("blog-image").src = `http://localhost:5000${post.coverImage}`;
-            }
-    
-            // ✅ Show Edit & Delete Buttons Only for Admin
-            if (isAdmin) {
-                document.getElementById("edit-btn").style.display = "inline-block";
-                document.getElementById("delete-btn").style.display = "inline-block";
-            }
-        } catch (error) {
-            console.error("❌ Error loading blog post:", error);
-            document.body.innerHTML = "<h2>Blog post not found.</h2>";
-        }
+    <script>
+const isAdmin = localStorage.getItem("isAdmin") === "true"; // ✅ Check if user is admin
+let blogId = new URLSearchParams(window.location.search).get("id");
+const params = new URLSearchParams(window.location.search);
+const id = new URLSearchParams(window.location.search).get("id");
+console.log("Fetching blog with ID:", id); // ✅ Debugging ID
+fetch(`http://localhost:5000/api/blogs/${id}`)
+
+
+
+async function loadPost() {
+    if (!blogId) {
+        document.body.innerHTML = "<h2>Blog post not found.</h2>";
+        return;
     }
-    
-    // ✅ Event Listeners for Editing
-    document.getElementById("edit-btn")?.addEventListener("click", () => {
-        document.getElementById("blog-title").innerHTML = `<input type="text" id="edit-title" value="${document.getElementById("blog-title").textContent}">`;
-        document.getElementById("blog-content").innerHTML = `<textarea id="edit-content">${document.getElementById("blog-content").textContent}</textarea>`;
-    
-        document.getElementById("edit-btn").style.display = "none";
-        document.getElementById("save-btn").style.display = "inline-block";
-    });
-    
-    document.getElementById("save-btn")?.addEventListener("click", async () => {
-        const newTitle = document.getElementById("edit-title").value;
-        const newContent = document.getElementById("edit-content").value;
-    
-        if (!newTitle || !newContent) {
-            alert("Title and content cannot be empty!");
-            return;
+
+    try {
+        const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`);
+        if (!response.ok) throw new Error("Post not found");
+
+        const post = await response.json();
+
+        // ✅ Display post details
+        document.getElementById("blog-title").innerText = blog.title;
+        document.getElementById("blog-date").innerText = new Date(blog.date).toLocaleDateString();
+        document.getElementById("blog-content").innerText = blog.content;
+        document.getElementById("blog-views").innerText = `Views: ${blog.views}`;
+
+        const img = document.getElementById("post-image");
+        img.src = post.coverImage ? `http://localhost:5000${post.coverImage}` : "images/default-thumbnail.jpg";
+        img.style.display = "block";
+
+        // ✅ Show Edit & Delete Buttons Only for Admin
+        if (isAdmin) {
+            document.getElementById("edit-btn").style.display = "inline-block";
+            document.getElementById("delete-btn").style.display = "inline-block";
         }
-    
-        const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: newTitle, content: newContent }),
-        });
-    
-        if (response.ok) {
-            alert("Blog post updated successfully!");
-            window.location.reload();
-        } else {
-            alert("Error updating blog post!");
-        }
+    } catch (error) {
+        console.error("❌ Error loading blog post:", error);
+        document.body.innerHTML = "<h2>Blog post not found.</h2>";
+    }
+}
+
+// ✅ Event Listeners for Editing
+document.getElementById("edit-btn").addEventListener("click", () => {
+    document.getElementById("post-title").innerHTML = `<input type="text" id="edit-title" value="${document.getElementById("post-title").textContent}">`;
+    document.getElementById("post-content").innerHTML = `<textarea id="edit-content">${document.getElementById("post-content").textContent}</textarea>`;
+
+    document.getElementById("edit-btn").style.display = "none";
+    document.getElementById("save-btn").style.display = "inline-block";
+});
+
+document.getElementById("save-btn").addEventListener("click", async () => {
+    const newTitle = document.getElementById("edit-title").value;
+    const newContent = document.getElementById("edit-content").value;
+
+    if (!newTitle || !newContent) {
+        alert("Title and content cannot be empty!");
+        return;
+    }
+
+    const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newTitle, content: newContent }),
     });
-    
-    // ✅ DELETE Functionality
-    document.getElementById("delete-btn")?.addEventListener("click", async () => {
-        if (!confirm("Are you sure you want to delete this blog post?")) return;
-    
-        const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`, {
-            method: "DELETE",
-        });
-    
-        if (response.ok) {
-            alert("Blog post deleted successfully!");
-            window.location.href = "blog.html";
-        } else {
-            alert("Error deleting blog post!");
-        }
+
+    if (response.ok) {
+        alert("Blog post updated successfully!");
+        window.location.reload();
+    } else {
+        alert("Error updating blog post!");
+    }
+});
+
+// ✅ DELETE Functionality
+document.getElementById("delete-btn").addEventListener("click", async () => {
+    if (!confirm("Are you sure you want to delete this blog post?")) return;
+
+    const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`, {
+        method: "DELETE",
     });
-    
-    window.onload = loadPost;
+
+    if (response.ok) {
+        alert("Blog post deleted successfully!");
+        window.location.href = "blog.html";
+    } else {
+        alert("Error deleting blog post!");
+    }
+});
+
+window.onload = loadPost;
+
     </script>
-    
 
 </body>
 </html>

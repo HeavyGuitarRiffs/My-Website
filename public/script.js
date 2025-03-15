@@ -1,9 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     setupPageTransitions();
     if (document.getElementById("blog-list")) {
-        fetchBlogs(); // Load from backend
+        fetchBlogs(); // Load blogs from backend
     }
-    loadBlogPosts(); // ✅ Load saved posts immediately
 });
 
 /* 🌟 1. Page Transitions (Fade-out Effect) */
@@ -35,44 +34,40 @@ async function fetchBlogs() {
 
         const blogs = await response.json();
         localStorage.setItem("savedBlogs", JSON.stringify(blogs)); // ✅ Save blogs locally
-        displayBlogs(blogs); // ✅ Display them immediately
+        displayBlogs(blogs);
+        const blogList = document.getElementById("blog-list");
+        blogList.innerHTML = ""; // Clear previous content
+
+        blogs.forEach(blog => {
+            let postDiv = document.createElement("div");
+            postDiv.classList.add("blog-item");
+
+            postDiv.innerHTML = `
+                <h2>${blog.title}</h2>
+                <p>${blog.content}</p>
+                ${blog.coverImage ? `<img src="http://localhost:5000${blog.coverImage}" class="cover-img" alt="${blog.title}">` : ""}
+                <button class="delete-btn" data-id="${blog._id}">Delete</button>
+            `;
+
+            blogList.appendChild(postDiv);
+        });
+
+        // Attach event listeners AFTER generating all blog posts
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", async (event) => {
+                const blogId = event.target.getAttribute("data-id");
+                if (confirm("Are you sure you want to delete this post?")) {
+                    await deletePost(blogId);
+                }
+            });
+        });
+
     } catch (error) {
-        console.warn("⚠️ Backend not available. Loading from localStorage.");
-        const localBlogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
-        displayBlogs(localBlogs);
+        console.error("Error fetching blogs:", error);
     }
 }
 
-/* 🌟 3. Display Blogs */
-function displayBlogs(blogs) {
-    const blogList = document.getElementById("blog-list");
-    blogList.innerHTML = ""; // Clear previous content
-
-    blogs.forEach(blog => {
-        let postDiv = document.createElement("div");
-        postDiv.classList.add("blog-item");
-
-        postDiv.innerHTML = `
-            <h2>${blog.title}</h2>
-            <p>${blog.content}</p>
-            ${blog.coverImage ? `<img src="http://localhost:5000${blog.coverImage}" class="cover-img" alt="${blog.title}">` : ""}
-            <button class="delete-btn" data-id="${blog._id}">Delete</button>
-        `;
-
-        blogList.appendChild(postDiv);
-    });
-
-    document.querySelectorAll(".delete-btn").forEach(button => {
-        button.addEventListener("click", async (event) => {
-            const blogId = event.target.getAttribute("data-id");
-            if (confirm("Are you sure you want to delete this post?")) {
-                await deletePost(blogId);
-            }
-        });
-    });
-}
-
-/* 🌟 4. Delete a Blog Post */
+/* 🌟 3. Delete a Blog Post */
 async function deletePost(id) {
     try {
         const response = await fetch(`http://localhost:5000/api/blogs/${id}`, {
@@ -91,7 +86,7 @@ async function deletePost(id) {
     }
 }
 
-/* 🌟 5. LocalStorage-based Blog Posts */
+/* 🌟 4. LocalStorage-based Blog Posts */
 function saveBlogPost() {
     const title = document.getElementById("blogTitle")?.value.trim();
     const content = document.getElementById("blogContent")?.value.trim();
@@ -115,7 +110,6 @@ function saveBlogPost() {
     document.getElementById("blogContent").value = "";
 }
 
-/* 🌟 6. Load Saved Blog Posts */
 function loadBlogPosts() {
     const blogPostsDiv = document.getElementById("blogPosts");
     if (!blogPostsDiv) return; // Prevent errors if the blog page is not loaded
@@ -130,6 +124,34 @@ function loadBlogPosts() {
         postDiv.innerHTML = `<h3>${post.title}</h3><p>${post.content}</p><small>${new Date(post.date).toLocaleString()}</small>`;
         blogPostsDiv.appendChild(postDiv);
     });
+}
+
+function displayBlogs(blogs) {
+    const blogList = document.getElementById("blog-list");
+    blogList.innerHTML = ""; // Clear previous content
+
+    blogs.forEach(blog => {
+        let postDiv = document.createElement("div");
+        postDiv.classList.add("blog-item");
+
+        postDiv.innerHTML = `
+            <h2>${blog.title}</h2>
+            <p>${blog.content}</p>
+            ${blog.coverImage ? `<img src="http://localhost:5000${blog.coverImage}" class="cover-img" alt="${blog.title}">` : ""}
+            <button class="delete-btn" data-id="${blog._id}">Delete</button>
+        `;
+
+        blogList.appendChild(postDiv);
+    });
+
+document.querySelectorAll(".delete-btn").forEach(button => {
+    button.addEventListener("click", async (event) => {
+        const blogId = event.target.getAttribute("data-id");
+        if (confirm("Are you sure you want to delete this post?")) {
+            await deletePost(blogId);
+        }
+    });
+});
 }
 
 window.onload = fetchBlogs; // ✅ Load blogs when page opens
