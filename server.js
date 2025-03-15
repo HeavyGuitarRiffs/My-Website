@@ -107,10 +107,9 @@ app.get("/api/blogs", async (req, res) => {
 app.get("/api/blogs/:id", async (req, res) => {
     try {
         const blog = await Blog.findById(req.params.id);
-        if (!blog) {
-            return res.status(404).json({ error: "Blog not found" });
-        }
-
+        if (!blog) return res.status(404).json({ error: "Post not found" });
+        res.json(blog);
+   
         blog.views += 1;
         await blog.save();
         
@@ -215,6 +214,7 @@ app.patch("/api/blogs/:id", async (req, res) => {
 
 
 // ** Start Server **
+
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });
