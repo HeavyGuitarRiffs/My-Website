@@ -345,7 +345,8 @@
         blogList.innerHTML += `
             <div class="blog-item" id="blog-${blogId}">
                 <a href="post.html?id=${blogId}" class="thumbnail-container">
-                    <img src="${blog.coverImage ? `http://localhost:5000${blog.coverImage}` : 'images/default-thumbnail.jpg'}" class="thumbnail">
+                    <img src="${blog.coverImage || 'images/default-thumbnail.jpg'}" class="thumbnail">
+
                 </a>
                 <h2 class="blog-title"><a href="post.html?id=${blogId}">${blog.title}</a></h2>
                 <p class="meta-info">Posted on ${formattedDate}</p>
