@@ -111,6 +111,16 @@ app.get("/api/blogs", async (req, res) => {
 // 📌 Get a single blog post by ID & increase view count
 app.get("/api/blogs/:id", async (req, res) => {
     try {
+        console.log("Requested blog ID:", req.params.id);
+const blogExists = await Blog.findById(req.params.id);
+console.log("Blog found:", blogExists);
+
+ // Ensure it's a valid ObjectId
+ if (!mongoose.Types.ObjectId.isValid(blogId)) {
+    return res.status(400).json({ error: "Invalid blog ID format" });
+}
+
+
         const blog = await Blog.findById(req.params.id);
         if (!blog) return res.status(404).json({ error: "Post not found" });
         

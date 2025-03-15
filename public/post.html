@@ -133,6 +133,12 @@
     <script>
 const isAdmin = localStorage.getItem("isAdmin") === "true"; // ✅ Check if user is admin
 let blogId = new URLSearchParams(window.location.search).get("id");
+const params = new URLSearchParams(window.location.search);
+const id = new URLSearchParams(window.location.search).get("id");
+console.log("Fetching blog with ID:", id); // ✅ Debugging ID
+fetch(`http://localhost:5000/api/blogs/${id}`)
+
+
 
 async function loadPost() {
     if (!blogId) {
