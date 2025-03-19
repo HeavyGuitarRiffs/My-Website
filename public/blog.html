@@ -257,11 +257,13 @@
     blogs.forEach((blog, index) => {
         const listItem = document.createElement("li");
         listItem.innerHTML = `
-            <a href="blog-post.html?index=${index}">
+            <a href="post.html?id=${blogs[index]._id}">
+
                 <h3>${blog.title}</h3>
                 ${blog.coverImage ? `<img src="${blog.coverImage}" alt="Blog Image" width="150">` : ""}
             </a>
-            <a href="blogpost.html?id=${blog._id}">Read More</a>
+            <a href="post.html?id=${blog._id}">Read More</a>
+
         `;
         blogList.appendChild(listItem);
     });
