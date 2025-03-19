@@ -261,6 +261,7 @@
                 <h3>${blog.title}</h3>
                 ${blog.coverImage ? `<img src="${blog.coverImage}" alt="Blog Image" width="150">` : ""}
             </a>
+            <a href="blogpost.html?id=${blog._id}">Read More</a>
         `;
         blogList.appendChild(listItem);
     });
@@ -397,4 +398,7 @@
 
 </body>
 </html>
+
+
+
 

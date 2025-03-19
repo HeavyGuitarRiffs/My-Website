@@ -89,77 +89,83 @@
     </div>
 
     <script>
-     document.addEventListener("DOMContentLoaded", function () {
-    const params = new URLSearchParams(window.location.search);
-    const index = Number(params.get("index"));
+    document.addEventListener("DOMContentLoaded", async function () {
+        const params = new URLSearchParams(window.location.search);
+        const blogId = params.get("id");
 
-    let blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
+        if (!blogId) {
+            document.body.innerHTML = "<h2>Blog not found.</h2><a href='blog.html' class='back-link'>← Back to Blog</a>";
+            return;
+        }
 
-    if (index < 0 || index >= blogs.length) {
-        document.body.innerHTML = "<h2>Blog not found.</h2><a href='blog.html' class='back-link'>← Back to Blog</a>";
-        return;
-    }
+        try {
+            // Fetch from API
+            const response = await fetch(`/api/blogs/${blogId}`);
+            if (!response.ok) throw new Error("Failed to fetch blog");
 
-    const blog = blogs[index];
+            const blog = await response.json();
+            displayBlog(blog);
+        } catch (error) {
+            console.error("API fetch error:", error);
 
-    document.getElementById("blog-title").textContent = blog.title;
-    document.getElementById("blog-content").textContent = blog.content;
-    document.getElementById("blog-date").textContent = `Posted on: ${new Date(blog.createdAt).toLocaleString()}`;
-
-    const blogImage = document.getElementById("blog-image");
-    if (blog.coverImage && blogImage) {
-        blogImage.src = blog.coverImage;
-        blogImage.style.display = "block";
-    }
-
-    // Edit Post
-    document.getElementById("edit-button")?.addEventListener("click", function () {
-        document.getElementById("blog-title").innerHTML = `<input type="text" id="edit-title" value="${blog.title}">`;
-        document.getElementById("blog-content").innerHTML = `<textarea id="edit-content">${blog.content}</textarea>`;
-
-        document.getElementById("edit-button").style.display = "none";
-        document.getElementById("save-button").style.display = "inline-block";
+            // Fallback: Try fetching from localStorage
+            const blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
+            const blog = blogs.find(b => b.id === blogId);
+            if (blog) {
+                displayBlog(blog);
+            } else {
+                document.body.innerHTML = "<h2>Blog not found.</h2><a href='blog.html' class='back-link'>← Back to Blog</a>";
+            }
+        }
     });
 
-    // Save Changes
-    document.getElementById("save-button")?.addEventListener("click", function () {
+    function displayBlog(blog) {
+        document.getElementById("blog-title").textContent = blog.title;
+        document.getElementById("blog-content").textContent = blog.content;
+        document.getElementById("blog-date").textContent = `Posted on: ${new Date(blog.createdAt).toLocaleString()}`;
+
+        const blogImage = document.getElementById("blog-image");
+        if (blog.coverImage) {
+            blogImage.src = blog.coverImage;
+            blogImage.style.display = "block";
+        }
+    }
+
+    function editBlog() {
+        document.getElementById("blog-title").innerHTML = `<input type="text" id="edit-title" value="${document.getElementById("blog-title").textContent}">`;
+        document.getElementById("blog-content").innerHTML = `<textarea id="edit-content">${document.getElementById("blog-content").textContent}</textarea>`;
+
+        document.querySelector(".edit-button").style.display = "none";
+        document.querySelector(".save-button").style.display = "inline-block";
+    }
+
+    function saveChanges() {
         const editedTitle = document.getElementById("edit-title").value;
         const editedContent = document.getElementById("edit-content").value;
 
-        blogs[index].title = editedTitle;
-        blogs[index].content = editedContent;
-        localStorage.setItem("savedBlogs", JSON.stringify(blogs));
+        fetch(`/api/blogs/${new URLSearchParams(window.location.search).get("id")}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: editedTitle, content: editedContent }),
+        })
+        .then(response => response.json())
+        .then(() => {
+            alert("Blog updated!");
+            window.location.reload();
+        })
+        .catch(error => console.error("Error updating blog:", error));
+    }
 
-        alert("Blog updated!");
-        window.location.reload();
-    });
-
-    // Delete Post
-    document.getElementById("delete-button")?.addEventListener("click", function () {
+    function deleteBlog() {
         if (confirm("Are you sure you want to delete this blog post?")) {
-            blogs.splice(index, 1);
-            localStorage.setItem("savedBlogs", JSON.stringify(blogs));
-            alert("Blog deleted!");
-            window.location.href = "blog.html"; // Redirect to blog list
+            fetch(`/api/blogs/${new URLSearchParams(window.location.search).get("id")}`, { method: "DELETE" })
+            .then(() => {
+                alert("Blog deleted!");
+                window.location.href = "blog.html";
+            })
+            .catch(error => console.error("Error deleting blog:", error));
         }
-    });
-});
-
-
-
-
-
+    }
     </script>
 </body>
 </html>
-
-<div id="blog-post">
-    <h1 id="blog-title"></h1>
-<img id="blog-image" style="display:none;">
-<p id="blog-date"></p>
-<p id="blog-content"></p>
-<button id="edit-button">Edit</button>
-<button id="save-button" style="display:none;">Save</button>
-<button id="delete-button">Delete</button>
-
-</div>
