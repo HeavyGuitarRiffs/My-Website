@@ -1,11 +1,14 @@
 const mongoose = require("mongoose");
 
-const blogSchema = new mongoose.Schema({
-  title: String,
-  content: String,
-  coverImage: String, // URL of cover image
-  views: { type: Number, default: 0 }, // Track views
-  createdAt: { type: Date, default: Date.now },
+const BlogSchema = new mongoose.Schema({
+    title: String,
+    content: String,
+    coverImage: String,
+    views: { type: Number, default: 0 },
+    createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model("Blog", blogSchema);
+// Prevent redefining the model
+const Blog = mongoose.models.Blog || mongoose.model("Blog", BlogSchema);
+
+module.exports = Blog;
