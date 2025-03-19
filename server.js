@@ -84,6 +84,10 @@ const upload = multer({
 
 // ** Routes **
 
+
+const blogRoutes = require("./routes/blogRoutes");  // ✅ Import blogRoutes
+app.use("/api/blogs", blogRoutes);  // ✅ Use blogRoutes under `/api/blogs`
+
 // 📌 Get all blog posts
 app.get("/api/blogs", async (req, res) => {
     try {
