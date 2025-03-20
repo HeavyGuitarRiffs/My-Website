@@ -11,17 +11,10 @@ const PORT = process.env.PORT || 5000;
 
 // ** Middleware **
 app.use(express.json());
-app.use(cors()); // Default allows all origins
-
-// ✅ Correctly set security headers separately
-app.use((req, res, next) => {
+app.use(cors({
     origin: "*", // Allow all origins (or specify your frontend URL)
     methods: ["GET", "POST", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type"];
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  next();
+    allowedHeaders: ["Content-Type"],
 }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded images
 app.use(express.static(path.join(__dirname, "public"))); // Serve static files
@@ -122,25 +115,24 @@ app.get("/api/blogs", async (req, res) => {
 // 📌 Get a single blog post by ID & increase view count
 app.get("/api/blogs/:id", async (req, res) => {
     try {
-        const { id } = req.params;
+        console.log("Requested blog ID:", req.params.id);
+const blogExists = await Blog.findById(req.params.id);
+console.log("Blog found:", blogExists);
 
-        // ✅ Ensure it's a valid ObjectId
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: "Invalid blog ID format" });
-        }
+ // Ensure it's a valid ObjectId
+ if (!mongoose.Types.ObjectId.isValid(blogId)) {
+    return res.status(400).json({ error: "Invalid blog ID format" });
+}
 
-        console.log(`Fetching blog post with ID: ${id}`);
-        
-        // ✅ Find the blog post
-        const blog = await Blog.findById(id);
-        
+console.log("Requested blog ID:", blogId);
+        const blog = await Blog.findById(req.params.id);
         if (!blog) return res.status(404).json({ error: "Post not found" });
-
-        // ✅ Increment view count & save
+        
+   
         blog.views += 1;
         await blog.save();
+        
 
-        // ✅ Return blog post details
         res.json({
             id: blog._id,
             title: blog.title,
@@ -148,7 +140,7 @@ app.get("/api/blogs/:id", async (req, res) => {
             coverImage: blog.coverImage,
             views: blog.views,
             createdAt: blog.createdAt,
-            date: blog.date // ✅ This line is fine
+            date: blog.date // ✅ Add this line
         });
     } catch (error) {
         console.error("❌ Error fetching blog post:", error);
