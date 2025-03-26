@@ -38,12 +38,17 @@ if (!process.env.MONGO_URI) {
     process.exit(1);
 }
 
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ MongoDB Connected"))
-    .catch(err => {
-        console.error("❌ MongoDB Connection Error:", err);
-        process.exit(1);
-    });
+// ✅ Correct & Organized Mongoose Connection
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    dbName: "mydatabase" // Ensure this is correct for your main site
+})
+.then(() => console.log("✅ MongoDB Connected"))
+.catch(err => {
+    console.error("❌ MongoDB Connection Error:", err);
+    process.exit(1);
+});
 
 // ** Blog Schema & Model **
 const BlogSchema = new mongoose.Schema({
@@ -52,10 +57,13 @@ const BlogSchema = new mongoose.Schema({
     coverImage: String, // Stores image URL
     views: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now },
-    date: { type: String, default: () => new Date().toLocaleString() } // ✅ Add this line
-});
+    date: { type: String, default: () => new Date().toLocaleString() }, // ✅ Add this line
+    
 
-const Blog = mongoose.model("Blog", BlogSchema);
+});
+module.exports = mongoose.model("Blog", BlogSchema, "blogs_main");
+
+
 
 // ** Image Upload Configuration **
 const storage = multer.diskStorage({
@@ -91,8 +99,8 @@ app.use("/api/blogs", blogRoutes);  // ✅ Use blogRoutes under `/api/blogs`
 // 📌 Get all blog posts
 app.get("/api/blogs", async (req, res) => {
     try {
-        console.log("Fetching blog posts...");
-        const blogs = await Blog.find().sort({ createdAt: -1 });
+        const blogs = await BlogModel.find(); // ✅ Fetching from the main database
+        console.log("Fetching from DB:", mongoose.connection.name); // ✅ Debugging database name
 
         // ✅ Ensure each blog object contains `_id`
         const formattedBlogs = blogs.map(blog => ({
@@ -120,6 +128,7 @@ const blogExists = await Blog.findById(req.params.id);
 console.log("Blog found:", blogExists);
 
  // Ensure it's a valid ObjectId
+ const blogId = req.params.id;
  if (!mongoose.Types.ObjectId.isValid(blogId)) {
     return res.status(400).json({ error: "Invalid blog ID format" });
 }

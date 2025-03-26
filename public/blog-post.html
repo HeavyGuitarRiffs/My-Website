@@ -79,6 +79,7 @@
         <p id="blog-date"></p>
         
         <p id="blog-content"></p>
+        <p>👁 Views: <span id="post-views"></span></p>
         <textarea id="content-input" class="blog-textarea hidden"></textarea>
         
         <button class="edit-button" onclick="editBlog()">Edit</button>
@@ -118,6 +119,17 @@
             }
         }
     });
+
+     // Handle post views
+     const postViewsElement = document.getElementById("postViews");
+        if (postViewsElement) {
+            let views = localStorage.getItem(`postViews_${blogId}`) || 0;
+            views = parseInt(views) + 1; // Increment views
+            
+            postViewsElement.textContent = views; // Update UI
+            localStorage.setItem(`postViews_${blogId}`, views); // Store per blog post
+        }
+    ;
 
     function displayBlog(blog) {
         document.getElementById("blog-title").textContent = blog.title;
@@ -166,6 +178,8 @@
             .catch(error => console.error("Error deleting blog:", error));
         }
     }
+
+    
     </script>
 </body>
 </html>
