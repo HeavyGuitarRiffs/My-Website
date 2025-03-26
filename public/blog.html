@@ -376,6 +376,8 @@
 
     blogs.forEach(blog => {
         const blogId = blog.id || blog._id || new Date().getTime(); // Handle missing ID
+        if (!blogId) return;
+         // Skip if missing ID
         const formattedDate = blog.createdAt
             ? new Date(blog.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
             : "Unknown Date";
@@ -397,7 +399,8 @@
 
 
 </script>
-<script src="blog.js" defer></script>
+<script src="public/blog.js" defer></script>
+
 
 </body>
 </html>

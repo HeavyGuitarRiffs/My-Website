@@ -61,6 +61,7 @@ const BlogSchema = new mongoose.Schema({
     views: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now },
     date: { type: String, default: () => new Date().toLocaleString() }, // ✅ Add this line
+    author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true } // ✅ Ensure each blog has an author
     
 
 });
@@ -95,25 +96,32 @@ const upload = multer({
 
 // ** Routes **
 
-
+// Apply to routes that need authentication
+app.use("/api/blogs", authenticateUser);
 const blogRoutes = require("./routes/blogRoutes");  // ✅ Import blogRoutes
 app.use("/api/blogs", blogRoutes);  // ✅ Use blogRoutes under `/api/blogs`
 
 // 📌 Get all blog posts
 app.get("/api/blogs", async (req, res) => {
     try {
-        const blogs = await BlogModel.find(); // ✅ Fetching from the main database
-        console.log("Fetching from DB:", mongoose.connection.name); // ✅ Debugging database name
+        // Ensure user is authenticated
+        const userId = req.user?.id; // Assuming `req.user` contains logged-in user data
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
 
-        // ✅ Ensure each blog object contains `_id`
+        // Fetch only blogs belonging to the logged-in user
+        const blogs = await BlogModel.find({ author: userId });
+
+        // Format the response to include relevant fields
         const formattedBlogs = blogs.map(blog => ({
-            id: blog._id, // Convert MongoDB `_id` to `id`
+            id: blog._id.toString(), // Convert MongoDB `_id` to a string
             title: blog.title,
             content: blog.content,
             coverImage: blog.coverImage,
             views: blog.views,
             createdAt: blog.createdAt,
-            date: blog.date // ✅ Add this line
+            date: blog.date
         }));
 
         res.json(formattedBlogs);
@@ -122,6 +130,7 @@ app.get("/api/blogs", async (req, res) => {
         res.status(500).json({ error: "Server Error" });
     }
 });
+
 
 // 📌 Get a single blog post by ID & increase view count
 app.get("/api/blogs/:id", async (req, res) => {
@@ -164,6 +173,9 @@ console.log("Requested blog ID:", blogId);
 app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
     try {
         const { title, content } = req.body;
+        const userId = req.user?.id; // Ensure user is authenticated
+
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
         if (!title || !content) {
             return res.status(400).json({ error: "Title and content are required" });
         }
@@ -174,6 +186,7 @@ app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
             title,
             content,
             coverImage: coverImagePath,
+            author: userId, // ✅ Associate blog with user
             date: new Date().toLocaleString()
         });
 
@@ -241,6 +254,23 @@ app.patch("/api/blogs/:id", async (req, res) => {
         res.status(500).json({ error: "Error updating blog post" });
     }
 });
+
+const jwt = require("jsonwebtoken");
+
+// Middleware to verify user authentication
+const authenticateUser = (req, res, next) => {
+    const token = req.headers.authorization?.split(" ")[1]; // Extract token from "Bearer TOKEN"
+
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ error: "Invalid token" });
+
+        req.user = user; // Attach user details to request
+        next();
+    });
+};
+
 
 
 
