@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 5000;
 
 // ** Middleware **
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({
     origin: "*", // Allow all origins (or specify your frontend URL)
     methods: ["GET", "POST", "PATCH", "DELETE"],
@@ -18,6 +19,8 @@ app.use(cors({
 }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded images
 app.use(express.static(path.join(__dirname, "public"))); // Serve static files
+
+
 
 // ** Ensure uploads directory exists **
 const dir = path.join(__dirname, "uploads/");
