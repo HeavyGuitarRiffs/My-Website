@@ -8,4 +8,10 @@ const BlogSchema = new mongoose.Schema({
     date: { type: String, default: () => new Date().toLocaleString() }
 }, { timestamps: true }); // ✅ Corrected placement of timestamps
 
+
+
+
+// ✅ Prevent model overwrite error
+const Blog = mongoose.models.Blog || mongoose.model("Blog", BlogSchema, "blogs_main");
+
 module.exports = mongoose.model("Blog", BlogSchema, "blogs_main");
