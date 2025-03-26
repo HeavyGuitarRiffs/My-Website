@@ -5,10 +5,7 @@ const BlogSchema = new mongoose.Schema({
     content: String,
     coverImage: String, // Stores image URL
     views: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now },
-    date: { type: String, default: () => new Date().toLocaleString() },
-});
+    date: { type: String, default: () => new Date().toLocaleString() }
+}, { timestamps: true }); // ✅ Corrected placement of timestamps
 
 module.exports = mongoose.model("Blog", BlogSchema, "blogs_main");
-
-module.exports = Blog;

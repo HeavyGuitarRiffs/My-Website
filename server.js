@@ -5,7 +5,7 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
-
+const Blog = require("./models/Blog"); // ✅ Correct import
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -99,12 +99,12 @@ const upload = multer({
 const blogRoutes = require("./routes/blogRoutes");  // ✅ Import blogRoutes
 app.use("/api/blogs", blogRoutes);  // ✅ Use blogRoutes under `/api/blogs`
 
+
 // 📌 Get all blog posts
 app.get("/api/blogs", async (req, res) => {
     try {
-        const blog = await Blog.findById(req.params.id);
-
-       
+        // Load latest blogs first
+        const blogs = await Blog.find({}).sort({ createdAt: -1 });
 
         // Format the response to include relevant fields
         const formattedBlogs = blogs.map(blog => ({
@@ -123,6 +123,7 @@ app.get("/api/blogs", async (req, res) => {
         res.status(500).json({ error: "Server Error" });
     }
 });
+
 
 
 // 📌 Get a single blog post by ID & increase view count
@@ -179,13 +180,12 @@ app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
             title,
             content,
             coverImage: coverImagePath,
-            author: userId, // ✅ Associate blog with user
             date: new Date().toLocaleString()
         });
 
         await newBlog.save();
         res.status(201).json({
-            id: newBlog._id, // ✅ Ensure frontend gets `id`
+            id: newBlog._id.toString(), // ✅ Ensure frontend gets `id`
             title: newBlog.title,
             content: newBlog.content,
             coverImage: newBlog.coverImage,
