@@ -1,16 +1,14 @@
 const mongoose = require("mongoose");
 
-const BlogSchema = new mongoose.Schema(
-    {
-        title: { type: String, required: true },
-        content: { type: String, required: true },
-        coverImage: { type: String, default: "" }, // Default empty string to prevent undefined issues
-        views: { type: Number, default: 0 }
-    },
-    { timestamps: true } // ✅ Ensures createdAt & updatedAt fields
-);
+const BlogSchema = new mongoose.Schema({
+    title: String,
+    content: String,
+    coverImage: String, // Stores image URL
+    views: { type: Number, default: 0 },
+    createdAt: { type: Date, default: Date.now },
+    date: { type: String, default: () => new Date().toLocaleString() },
+});
 
-// Prevent redefining the model
-const Blog = mongoose.models.Blog || mongoose.model("Blog", BlogSchema);
+module.exports = mongoose.model("Blog", BlogSchema, "blogs_main");
 
 module.exports = Blog;

@@ -61,7 +61,7 @@ const BlogSchema = new mongoose.Schema({
     views: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now },
     date: { type: String, default: () => new Date().toLocaleString() }, // ✅ Add this line
-    author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true } // ✅ Ensure each blog has an author
+   
     
 
 });
@@ -102,11 +102,7 @@ app.use("/api/blogs", blogRoutes);  // ✅ Use blogRoutes under `/api/blogs`
 // 📌 Get all blog posts
 app.get("/api/blogs", async (req, res) => {
     try {
-        const blogs = await Blog.find({}).populate("author", "name");
-
-        if (!userId) {
-            return res.status(401).json({ error: "Unauthorized" });
-        }
+        const blog = await Blog.findById(req.params.id);
 
        
 
@@ -170,9 +166,9 @@ console.log("Requested blog ID:", blogId);
 app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
     try {
         const { title, content } = req.body;
-        const userId = req.user?.id; // Ensure user is authenticated
+      
 
-        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+       
         if (!title || !content) {
             return res.status(400).json({ error: "Title and content are required" });
         }
@@ -252,21 +248,7 @@ app.patch("/api/blogs/:id", async (req, res) => {
     }
 });
 
-const jwt = require("jsonwebtoken");
 
-// Middleware to verify user authentication
-const authenticateUser = (req, res, next) => {
-    const token = req.headers.authorization?.split(" ")[1]; // Extract token from "Bearer TOKEN"
-
-    if (!token) return res.status(401).json({ error: "Unauthorized" });
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error: "Invalid token" });
-
-        req.user = user; // Attach user details to request
-        next();
-    });
-};
 
 
 
