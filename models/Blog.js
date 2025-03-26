@@ -6,12 +6,9 @@ const BlogSchema = new mongoose.Schema({
     coverImage: String, // Stores image URL
     views: { type: Number, default: 0 },
     date: { type: String, default: () => new Date().toLocaleString() }
-}, { timestamps: true }); // ✅ Corrected placement of timestamps
+}, { timestamps: true });
 
+// ✅ Ensure the model is registered only once
+const Blog = mongoose.models.Blog || mongoose.model("Blog", BlogSchema);
 
-
-
-// ✅ Prevent model overwrite error
-const Blog = mongoose.models.Blog || mongoose.model("Blog", BlogSchema, "blogs_main");
-
-module.exports = mongoose.model("Blog", BlogSchema, "blogs_main");
+module.exports = Blog;
