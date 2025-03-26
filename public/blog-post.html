@@ -101,8 +101,12 @@
 
         try {
             // Fetch from API
+            console.log("Blog ID:", blogId);
+            console.log("Fetching blog from API:", `/api/blogs/${blogId}`);
             const response = await fetch(`/api/blogs/${blogId}`);
             if (!response.ok) throw new Error("Failed to fetch blog");
+
+
 
             const blog = await response.json();
             displayBlog(blog);
@@ -120,16 +124,7 @@
         }
     });
 
-     // Handle post views
-     const postViewsElement = document.getElementById("postViews");
-        if (postViewsElement) {
-            let views = localStorage.getItem(`postViews_${blogId}`) || 0;
-            views = parseInt(views) + 1; // Increment views
-            
-            postViewsElement.textContent = views; // Update UI
-            localStorage.setItem(`postViews_${blogId}`, views); // Store per blog post
-        }
-    ;
+    
 
     function displayBlog(blog) {
         document.getElementById("blog-title").textContent = blog.title;
@@ -143,13 +138,35 @@
         }
     }
 
+     // Handle post views
+     const postViewsElement = document.getElementById("post-Views");
+        if (postViewsElement) {
+            if (blogId) {
+    let views = localStorage.getItem(`postViews_${blogId}`) || 0;
+    views = parseInt(views) + 1;
+    postViewsElement.textContent = views;
+    localStorage.setItem(`postViews_${blogId}`, views);
+    
+
+}
+
+        }
+    ;
+
     function editBlog() {
+        localStorage.setItem("isEditing", "true");
         document.getElementById("blog-title").innerHTML = `<input type="text" id="edit-title" value="${document.getElementById("blog-title").textContent}">`;
         document.getElementById("blog-content").innerHTML = `<textarea id="edit-content">${document.getElementById("blog-content").textContent}</textarea>`;
 
         document.querySelector(".edit-button").style.display = "none";
         document.querySelector(".save-button").style.display = "inline-block";
     }
+    // Restore editing mode if needed
+window.addEventListener("DOMContentLoaded", () => {
+    if (localStorage.getItem("isEditing") === "true") {
+        editBlog();
+    }
+});
 
     function saveChanges() {
         const editedTitle = document.getElementById("edit-title").value;
@@ -160,12 +177,17 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ title: editedTitle, content: editedContent }),
         })
-        .then(response => response.json())
+        .then(response => {
+        if (!response.ok) throw new Error("Failed to update blog");
+        return response.json();
+    })
         .then(() => {
             alert("Blog updated!");
+            localStorage.removeItem("isEditing"); // Reset edit state
             window.location.reload();
         })
         .catch(error => console.error("Error updating blog:", error));
+        document.getElementById("error-message").textContent = "Failed to save changes. Please try again.";
     }
 
     function deleteBlog() {
