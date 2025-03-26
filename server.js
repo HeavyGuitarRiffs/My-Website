@@ -105,6 +105,8 @@ app.get("/api/blogs", async (req, res) => {
     try {
         // Load latest blogs first
         const blogs = await Blog.find({}).sort({ createdAt: -1 });
+        
+        
 
         // Format the response to include relevant fields
         const formattedBlogs = blogs.map(blog => ({

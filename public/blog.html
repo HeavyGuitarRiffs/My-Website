@@ -240,6 +240,50 @@
     </footer>
     
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const blogList = document.getElementById("blog-list");
+        
+
+ // ✅ Cover image preview
+ document.getElementById("coverImage").addEventListener("change", function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById("preview").src = e.target.result;
+                document.getElementById("preview").style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById("preview").src = e.target.result;
+                    document.getElementById("preview").style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        ;
+
+        document.getElementById("blogForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            formData.append("title", document.getElementById("title").value);
+            formData.append("content", document.getElementById("content").value);
+            formData.append("coverImage", document.getElementById("coverImage").files[0]);
+
+            const response = await fetch("/api/blogs", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            console.log("Blog Created:", data);
+        });
+
+    });
         const isAdmin = localStorage.getItem("isAdmin") === "true"; // ✅ Define isAdmin globally
 
         document.addEventListener("DOMContentLoaded", function () {
