@@ -23,8 +23,8 @@ app.use(express.static(path.join(__dirname, "public"))); // Serve static files
 
 
 // ** Ensure uploads directory exists **
-const dir = path.join(__dirname, "uploads/");
-if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 // ** Content Security Policy Middleware **
 app.use((req, res, next) => {
@@ -96,22 +96,19 @@ const upload = multer({
 
 // ** Routes **
 
-// Apply to routes that need authentication
-app.use("/api/blogs", authenticateUser);
 const blogRoutes = require("./routes/blogRoutes");  // ✅ Import blogRoutes
 app.use("/api/blogs", blogRoutes);  // ✅ Use blogRoutes under `/api/blogs`
 
 // 📌 Get all blog posts
 app.get("/api/blogs", async (req, res) => {
     try {
-        // Ensure user is authenticated
-        const userId = req.user?.id; // Assuming `req.user` contains logged-in user data
+        const blogs = await Blog.find({}).populate("author", "name");
+
         if (!userId) {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        // Fetch only blogs belonging to the logged-in user
-        const blogs = await BlogModel.find({ author: userId });
+       
 
         // Format the response to include relevant fields
         const formattedBlogs = blogs.map(blog => ({
