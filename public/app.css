@@ -443,6 +443,14 @@ body {
   .blog-container {
       width: 90%;
   }
+
+  body {
+    font-size: 14px;
+}
+
+  .thumbnail {
+    max-height: 200px;
+}
   
   .title-container {
       width: 80%;

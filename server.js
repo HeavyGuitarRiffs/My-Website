@@ -8,6 +8,7 @@ require("dotenv").config();
 const Blog = require("./models/Blog"); // ✅ Correct import
 const app = express();
 const PORT = process.env.PORT || 5000;
+const bodyParser = require('body-parser');
 
 // ** Middleware **
 app.use(express.json());
@@ -19,8 +20,7 @@ app.use(cors({
 }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded images
 app.use(express.static(path.join(__dirname, "public"))); // Serve static files
-
-
+app.use(bodyParser.json()); // Add body-parser middleware
 
 // ** Ensure uploads directory exists **
 const uploadDir = path.join(__dirname, "uploads");
@@ -61,13 +61,7 @@ const BlogSchema = new mongoose.Schema({
     views: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now },
     date: { type: String, default: () => new Date().toLocaleString() }, // ✅ Add this line
-   
-    
-
 });
-
-
-
 
 // ** Image Upload Configuration **
 const storage = multer.diskStorage({
@@ -99,14 +93,11 @@ const upload = multer({
 const blogRoutes = require("./routes/blogRoutes");  // ✅ Import blogRoutes
 app.use("/api/blogs", blogRoutes);  // ✅ Use blogRoutes under `/api/blogs`
 
-
 // 📌 Get all blog posts
 app.get("/api/blogs", async (req, res) => {
     try {
         // Load latest blogs first
         const blogs = await Blog.find({}).sort({ createdAt: -1 });
-        
-        
 
         // Format the response to include relevant fields
         const formattedBlogs = blogs.map(blog => ({
@@ -126,29 +117,25 @@ app.get("/api/blogs", async (req, res) => {
     }
 });
 
-
-
 // 📌 Get a single blog post by ID & increase view count
 app.get("/api/blogs/:id", async (req, res) => {
     try {
         console.log("Requested blog ID:", req.params.id);
-const blogExists = await Blog.findById(req.params.id);
-console.log("Blog found:", blogExists);
+        const blogExists = await Blog.findById(req.params.id);
+        console.log("Blog found:", blogExists);
 
- // Ensure it's a valid ObjectId
- const blogId = req.params.id;
- if (!mongoose.Types.ObjectId.isValid(blogId)) {
-    return res.status(400).json({ error: "Invalid blog ID format" });
-}
+        // Ensure it's a valid ObjectId
+        const blogId = req.params.id;
+        if (!mongoose.Types.ObjectId.isValid(blogId)) {
+            return res.status(400).json({ error: "Invalid blog ID format" });
+        }
 
-console.log("Requested blog ID:", blogId);
+        console.log("Requested blog ID:", blogId);
         const blog = await Blog.findById(req.params.id);
         if (!blog) return res.status(404).json({ error: "Post not found" });
-        
-   
+
         blog.views += 1;
         await blog.save();
-        
 
         res.json({
             id: blog._id,
@@ -169,9 +156,7 @@ console.log("Requested blog ID:", blogId);
 app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
     try {
         const { title, content } = req.body;
-      
 
-       
         if (!title || !content) {
             return res.status(400).json({ error: "Title and content are required" });
         }
@@ -200,7 +185,6 @@ app.post("/api/blogs", upload.single("coverImage"), async (req, res) => {
         res.status(500).json({ error: "Error creating blog post" });
     }
 });
-
 
 // 📌 Delete a blog post
 app.delete("/api/blogs/:id", async (req, res) => {
@@ -250,13 +234,7 @@ app.patch("/api/blogs/:id", async (req, res) => {
     }
 });
 
-
-
-
-
-
 // ** Start Server **
-
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });
