@@ -19,13 +19,31 @@ document.addEventListener("DOMContentLoaded", async () => {
             content.textContent = blog.content.substring(0, 100) + "...";
 
             const img = document.createElement("img");
-            img.src = blog.coverImage ? `/uploads/${blog.coverImage}` : "images/default-image.jpg"; // ✅ Ensure correct path
+            console.log("Blog cover image:", blog.coverImage);
+
+            if (blog.coverImage) {
+                img.src = blog.coverImage.startsWith("http") ? blog.coverImage : `/uploads/${blog.coverImage}`;
+            } else {
+                img.src = "images/default-image.jpg"; // Fallback
+            }
+            img.onerror = () => img.src = "images/default-image.jpg"; // Handle broken image
+            
+
             img.alt = "Cover Image";
             img.width = 200;
             img.onerror = () => img.src = "images/default-image.jpg"; // ✅ Handle broken images
 
+            // ✅ FIXING INVALID DATE ISSUE
+            console.log("Blog date raw value:", blog.date);
+            const formattedDate = blog.date ? new Date(blog.date).toLocaleDateString("en-US", { 
+                year: "numeric", month: "long", day: "numeric" 
+            }) : "Unknown Date";
+
             const views = document.createElement("p");
             views.textContent = `👁 Views: ${blog.views}`;
+            
+            const dateInfo = document.createElement("p");
+            dateInfo.textContent = `📅 Posted on: ${formattedDate}`;
 
             const link = document.createElement("a");
             link.href = `blog-details.html?id=${blog._id}`;
@@ -35,6 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             blogPost.appendChild(title);
             blogPost.appendChild(content);
             blogPost.appendChild(img);
+            blogPost.appendChild(dateInfo);
             blogPost.appendChild(views);
             blogPost.appendChild(link);
 
