@@ -71,7 +71,8 @@
 <body>
     <div class="blog-container">
         <input type="file" id="imageUpload" class="hidden">
-        <img id="blog-image" class="thumbnail" onclick="document.getElementById('imageUpload').click();">
+        <img id="blog-image" class="thumbnail" src="" alt="Blog Thumbnail" onerror="this.src='/default-thumbnail.jpg';">
+
         
         <h1 id="blog-title"></h1>
         <input type="text" id="title-input" class="blog-input hidden">
