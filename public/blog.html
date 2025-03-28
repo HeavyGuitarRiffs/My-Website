@@ -223,7 +223,9 @@
             <input type="text" id="blogTitle" placeholder="Enter blog title..." required>
             <textarea id="blogContent" placeholder="Write your blog post here..."></textarea>
             <input type="file" id="imageUpload" accept="image/*">
-            <img id="blog-image-preview" class="thumbnail" src="images/default-thumbnail.jpg">
+            <img id="blog-image-preview" src="" alt="Image Preview">
+<input type="hidden" id="coverImageInput">
+
 
             <button onclick="saveBlogPost()">Save Post</button>
         </div>
@@ -426,8 +428,7 @@
         blogList.innerHTML += `
             <div class="blog-item" id="blog-${blogId}">
         <a href="post.html?id=${blogId}" class="thumbnail-container">
-            <img src="${blog.coverImage || 'images/default-thumbnail.jpg'}" 
-                class="thumbnail" 
+            <img src="${blog.coverImage}" class="thumbnail" 
                 onerror="this.src='/default-thumbnail.jpg';">
         </a>
         <h2 class="blog-title"><a href="post.html?id=${blogId}">${blog.title}</a></h2>

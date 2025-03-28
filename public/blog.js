@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!response.ok) throw new Error("Failed to fetch blogs");
 
         const blogs = await response.json();
-        blogList.innerHTML = ""; // Clear previous content if any
+        blogList.innerHTML = ""; // Clear previous content
 
         blogs.forEach(blog => {
             const blogPost = document.createElement("div");
@@ -19,12 +19,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             content.textContent = blog.content.substring(0, 100) + "...";
 
             const img = document.createElement("img");
-            img.src = blog.coverImage ? blog.coverImage : "default-image.jpg"; // Fallback image
+            img.src = blog.coverImage ? `/uploads/${blog.coverImage}` : "images/default-image.jpg"; // ✅ Ensure correct path
             img.alt = "Cover Image";
             img.width = 200;
+            img.onerror = () => img.src = "images/default-image.jpg"; // ✅ Handle broken images
 
             const views = document.createElement("p");
-            views.textContent = `Views: ${blog.views}`;
+            views.textContent = `👁 Views: ${blog.views}`;
 
             const link = document.createElement("a");
             link.href = `blog-details.html?id=${blog._id}`;
@@ -41,6 +42,35 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     } catch (error) {
         console.error("Error loading blogs:", error);
-        blogList.innerHTML = "<p>Failed to load blogs. Please try again later.</p>";
+        blogList.innerHTML = "<p>⚠ Failed to load blogs. Please try again later.</p>";
     }
+});
+
+// ✅ Only add event listener if image upload exists
+document.addEventListener("DOMContentLoaded", () => {
+    const imageUpload = document.getElementById("imageUpload");
+    if (!imageUpload) return;
+
+    imageUpload.addEventListener("change", function (event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        fetch("/upload", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.imageUrl) {
+                const preview = document.getElementById("blog-image-preview");
+                const coverImageInput = document.getElementById("coverImageInput");
+                if (preview) preview.src = data.imageUrl; // ✅ Ensure preview updates
+                if (coverImageInput) coverImageInput.value = data.imageUrl; // ✅ Store URL in input field
+            }
+        })
+        .catch(error => console.error("Upload error:", error));
+    });
 });
