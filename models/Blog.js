@@ -1,15 +1,15 @@
 const mongoose = require("mongoose");
 
-const BlogSchema = new mongoose.Schema({
+// Define the schema
+const blogSchema = new mongoose.Schema(
+  {
     title: { type: String, required: true },
     content: { type: String, required: true },
-    coverImage: String, // Stores image URL
+    coverImage: { type: String }, // Stores image URL
     views: { type: Number, default: 0 },
-    date: { type: String, default: () => new Date().toLocaleString() }
-}, { timestamps: true });
+  },
+  { timestamps: true } // Automatically adds createdAt & updatedAt fields
+);
 
-// ✅ Ensure the model is registered only once
-
-
-
-module.exports = mongoose.model('Blog', blogSchema);
+// Export the model
+module.exports = mongoose.model("Blog", blogSchema);
