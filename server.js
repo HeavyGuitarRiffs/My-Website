@@ -10,6 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const bodyParser = require('body-parser');
 
+app.use(express.static("public"));
 // ** Middleware **
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -65,10 +66,9 @@ const BlogSchema = new mongoose.Schema({
 
 // ** Image Upload Configuration **
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const dir = path.join(__dirname, "uploads/");
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        cb(null, dir);
+    destination: "public/uploads/", // Store images in public/uploads/
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + "-" + file.originalname);
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + "-" + file.originalname);
