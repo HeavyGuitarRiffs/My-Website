@@ -211,63 +211,97 @@
             <li><a href="portfolio.html">Portfolio</a></li>
         </ul>
     </nav>
-    <div class="blog-container">
-        <div class="title-container">Create a New Blog Post</div>
-        <form class="form" id="blogForm">
-            <input type="text" id="blogTitle" placeholder="Enter blog title..." required>
-            <textarea id="blogContent" placeholder="Write your blog post here..." required></textarea>
-            <input type="file" id="imageUpload" accept="image/*">
-            <img id="blog-image-preview" src="" alt="Image Preview" style="max-width: 100%; display: none;">
-            <input type="hidden" id="coverImageInput">
-            <button type="submit">Save Post</button>
-        </form>
-    </div>
+
      
 
  
 
  
     <div class="blog-container">
+        <div class="title-container">Create a New Blog Post</div>
+        <div class="form" id="blogForm">
+
+            <input type="text" id="blogTitle" placeholder="Enter blog title..." required>
+            <textarea id="blogContent" placeholder="Write your blog post here..."></textarea>
+            <input type="file" id="imageUpload" accept="image/*">
+            <img id="blog-image-preview" src="" alt="Image Preview">
+<input type="hidden" id="coverImageInput">
+
+
+            <button onclick="saveBlogPost()">Save Post</button>
+        </div>
+    </div>
+
+
+    
+
+    <div class="blog-container">
         <h1>Saved Blog Posts</h1>
         <ul id="blog-list"></ul>
     </div>
 
     <footer class="social-footer">
-        <p>All Rights Reserved &copy; 2025</p>
+        <p>All Rights Reserved © 2025</p>
     </footer>
-
+    
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const blogList = document.getElementById("blog-list");
-
-            document.getElementById("imageUpload").addEventListener("change", function (event) {
-                const file = event.target.files[0];
-                if (!file) return;
-
+        
+            // ✅ Cover image preview (only if imageUpload exists)
+            const imageUpload = document.getElementById("imageUpload");
+            if (imageUpload) {
+                imageUpload.addEventListener("change", function (event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+        
+                    const formData = new FormData();
+                    formData.append("image", file);
+        
+                    fetch("/upload", {
+                        method: "POST",
+                        body: formData,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.imageUrl) {
+                            document.getElementById("blog-image-preview").setAttribute("data-url", data.imageUrl);
+                            document.getElementById("coverImageInput").value = data.imageUrl;
+                        }
+                    })
+                    .catch(error => console.error("Upload error:", error));
+                });
+            }
+        
+            document.getElementById("blogForm").addEventListener("submit", async function(event) {
+                event.preventDefault();
                 const formData = new FormData();
-                formData.append("image", file);
-
-                fetch("/upload", {
+                formData.append("title", document.getElementById("title").value);
+                formData.append("content", document.getElementById("content").value);
+                formData.append("coverImage", document.getElementById("coverImageInput").value); // ✅ Corrected reference
+        
+                const response = await fetch("/api/blogs", {
                     method: "POST",
-                    body: formData,
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.imageUrl) {
-                        document.getElementById("blog-image-preview").setAttribute("data-url", data.imageUrl);
-                        document.getElementById("coverImageInput").value = data.imageUrl;
-                    }
-                })
-                .catch(error => console.error("Upload error:", error));
+                    body: formData
+                });
+        
+                const data = await response.json();
+                console.log("Blog Created:", data);
             });
-
+        });
+        
+        const isAdmin = localStorage.getItem("isAdmin") === "true"; // ✅ Define isAdmin globally
+        
+        document.addEventListener("DOMContentLoaded", function () {
             let blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
+            const blogList = document.getElementById("blog-list");
+        
             if (blogs.length === 0) {
                 blogList.innerHTML = "<p>No blogs available.</p>";
                 return;
             }
-
-            blogs.forEach(blog => {
+        
+            blogs.forEach((blog, index) => {
                 const listItem = document.createElement("li");
                 listItem.innerHTML = `
                     <a href="post.html?id=${blog.id || blog._id}">
@@ -275,32 +309,37 @@
                         ${blog.coverImage ? `<img src="${blog.coverImage}" alt="Blog Image" width="150">` : ""}
                     </a>
                 `;
-                blogList.appendChild(listItem);
+                blogList.appendChild(listItem); // ✅ Fixed closing backtick issue
             });
         });
-
+        
         function saveBlogPost() {
             let blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
             const title = document.getElementById("blogTitle").value;
             const content = document.getElementById("blogContent").value;
             const coverImage = document.getElementById("blog-image-preview").getAttribute("data-url");
-
+        
             if (!title || !content) {
                 alert("Title and Content are required!");
                 return;
             }
-
+        
             const newBlog = { id: Date.now(), title, content, coverImage };
             blogs.push(newBlog);
             localStorage.setItem("savedBlogs", JSON.stringify(blogs));
+        
             alert("Blog saved!");
             window.location.reload();
         }
-
+        
         async function fetchBlogs() {
             try {
                 const response = await fetch("http://localhost:5000/api/blogs");
-                if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+        
+                if (!response.ok) {
+                    throw new Error(`Server Error: ${response.status}`);
+                }
+        
                 const blogs = await response.json();
                 displayBlogs(blogs);
             } catch (error) {
@@ -309,32 +348,58 @@
                 displayBlogs(localBlogs);
             }
         }
-
+        
         function displayBlogs(blogs) {
             const blogList = document.getElementById("blog-list");
+        
+            if (!blogList) {
+                console.error("⚠️ Blog list element not found.");
+                return;
+            }
+        
             blogList.innerHTML = "";
+        
             blogs.forEach(blog => {
-                const blogId = blog.id || blog._id || new Date().getTime();
-                if (!blogId) return;
+                console.log("🔍 Checking Blog Data:", blog);
+        
+                const blogId = blog.id || blog._id || new Date().getTime(); // Ensure a unique ID
+                if (!blogId) {
+                    console.warn("⚠️ Missing Blog ID - Skipping this blog:", blog);
+                    return;
+                }
+        
                 const formattedDate = blog.createdAt
-                    ? new Date(blog.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+                    ? new Date(blog.createdAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric"
+                      })
                     : "Unknown Date";
+        
+                let coverImageSrc = blog.coverImage ? `http://localhost:5000${blog.coverImage}` : "images/default-thumbnail.jpg";
+        
                 blogList.innerHTML += `
                     <div class="blog-item" id="blog-${blogId}">
                         <a href="post.html?id=${blogId}" class="thumbnail-container">
-                            <img src="${blog.coverImage || 'images/default-thumbnail.jpg'}" class="thumbnail" onerror="this.src='/default-thumbnail.jpg';">
+                            <img src="${coverImageSrc}" class="thumbnail" onerror="this.src='images/default-thumbnail.jpg';">
                         </a>
                         <h2 class="blog-title"><a href="post.html?id=${blogId}">${blog.title}</a></h2>
-                        <p class="meta-info">Posted on ${formattedDate}</p>
+                        <p class="meta-info">Posted on ${formattedDate} | Views: ${blog.views || 0}</p>
                     </div>
                 `;
             });
         }
+        
+        // Load blogs on page load
+        document.addEventListener("DOMContentLoaded", fetchBlogs);
+        </script>
+        <script src="public/blog.js" defer></script>
+        
 
-        window.onload = () => {
-            fetchBlogs();
-        };
-    </script>
-    <script src="public/blog.js" defer></script>
+
 </body>
 </html>
+
+
+
+
