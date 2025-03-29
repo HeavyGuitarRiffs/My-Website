@@ -139,12 +139,14 @@ if (blog.createdAt && !isNaN(new Date(blog.createdAt).getTime())) {
 
 
         const blogImage = document.getElementById("blog-image");
-if (blog.coverImage && blog.coverImage.trim() !== "") {
+        if (blog.coverImage && blog.coverImage.trim() !== "") {
     blogImage.src = blog.coverImage;
+    blogImage.style.display = "block"; 
 } else {
     blogImage.src = "/default-thumbnail.jpg"; // Ensure this default image exists
 }
-blogImage.style.display = "block";
+
+
     }
 
      // Handle post views
