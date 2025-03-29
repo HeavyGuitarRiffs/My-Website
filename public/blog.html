@@ -234,14 +234,14 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const blogList = document.getElementById("blog-list");
-
+    
             // ✅ Cover image preview
             const imageUpload = document.getElementById("imageUpload");
             if (imageUpload) {
                 imageUpload.addEventListener("change", function (event) {
                     const file = event.target.files[0];
                     if (!file) return;
-
+    
                     const reader = new FileReader();
                     reader.onload = function (e) {
                         document.getElementById("blog-image-preview").src = e.target.result;
@@ -250,62 +250,79 @@
                     reader.readAsDataURL(file);
                 });
             }
-
+    
+            // ✅ Save a new blog post
             function saveBlogPost() {
                 let blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
                 const title = document.getElementById("blogTitle").value;
                 const content = document.getElementById("blogContent").value;
                 const coverImage = document.getElementById("blog-image-preview").src;
-
+    
                 if (!title || !content) {
                     alert("Title and Content are required!");
                     return;
                 }
-
+    
                 const newBlog = {
                     id: Date.now(),
                     title,
                     content,
                     coverImage,
                     createdAt: new Date().toISOString(),
-                    views: 0
+                    views: 0 // Initialize views to 0
                 };
                 blogs.push(newBlog);
                 localStorage.setItem("savedBlogs", JSON.stringify(blogs));
-
+    
                 alert("Blog saved!");
                 window.location.reload();
             }
-
+    
+            // ✅ Fetch and display blogs
             function fetchBlogs() {
                 const blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
                 displayBlogs(blogs);
             }
-
+    
+            // ✅ Display blogs in the list
             function displayBlogs(blogs) {
                 blogList.innerHTML = "";
-
+    
                 blogs.forEach(blog => {
                     const formattedDate = new Date(blog.createdAt).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",
                         day: "numeric"
                     });
-
+    
                     const blogItem = `
                         <div class="blog-item">
-                            <a href="blog-post.html?id=${blog.id}" class="thumbnail-container">
+                            <a href="blog-post.html?id=${blog.id}" class="thumbnail-container" onclick="incrementViews(${blog.id})">
                                 <img src="${blog.coverImage}" class="thumbnail" onerror="this.src='images/default-thumbnail.jpg';">
                             </a>
-                            <h2 class="blog-title"><a href="blog-post.html?id=${blog.id}">${blog.title}</a></h2>
+                            <h2 class="blog-title"><a href="blog-post.html?id=${blog.id}" onclick="incrementViews(${blog.id})">${blog.title}</a></h2>
                             <p class="meta-info">Posted on ${formattedDate} | Views: ${blog.views}</p>
                         </div>
                     `;
                     blogList.innerHTML += blogItem;
                 });
             }
-
+    
+            // ✅ Increment views for a blog
+            function incrementViews(blogId) {
+                let blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
+                const blog = blogs.find(b => b.id === blogId);
+                if (blog) {
+                    blog.views += 1; // Increment views
+                    localStorage.setItem("savedBlogs", JSON.stringify(blogs));
+                }
+            }
+    
+            // Fetch blogs on page load
             fetchBlogs();
+    
+            // Expose saveBlogPost to the global scope for the button
+            window.saveBlogPost = saveBlogPost;
         });
     </script>
 </body>
