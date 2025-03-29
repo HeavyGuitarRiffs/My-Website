@@ -219,7 +219,8 @@
  
     <div class="blog-container">
         <div class="title-container">Create a New Blog Post</div>
-        <div class="blog-form">
+        <div class="form" id="blogForm">
+
             <input type="text" id="blogTitle" placeholder="Enter blog title..." required>
             <textarea id="blogContent" placeholder="Write your blog post here..."></textarea>
             <input type="file" id="imageUpload" accept="image/*">
@@ -236,7 +237,7 @@
 
     <div class="blog-container">
         <h1>Saved Blog Posts</h1>
-        <div id="blog-list"></div>
+        <ul id="blog-list"></ul>
     </div>
 
     <footer class="social-footer">
@@ -263,8 +264,9 @@
     .then(response => response.json())
     .then(data => {
         if (data.imageUrl) {
-            document.getElementById("blog-image-preview").src = data.imageUrl;
             document.getElementById("blog-image-preview").setAttribute("data-url", data.imageUrl);
+document.getElementById("coverImageInput").value = data.imageUrl;
+
         }
     })
     .catch(error => console.error("Upload error:", error));
@@ -300,35 +302,38 @@
     blogs.forEach((blog, index) => {
         const listItem = document.createElement("li");
         listItem.innerHTML = `
-            <a href="post.html?id=${blogs[index]._id}">
+    <a href="post.html?id=${blog.id || blog._id}">
+        <h3>${blog.title}</h3>
+        ${blog.coverImage ? `<img src="${blog.coverImage}" alt="Blog Image" width="150">` : ""}
+    </a>
+`;
 
-                <h3>${blog.title}</h3>
-                ${blog.coverImage ? `<img src="${blog.coverImage}" alt="Blog Image" width="150">` : ""}
-            </a>
-            <a href="post.html?id=${blog._id}">Read More</a>
+            
 
         `;
         blogList.appendChild(listItem);
     });
 });
 
-        async function saveBlogPost() {
-            const title = document.getElementById("blogTitle").value;
-            const content = document.getElementById("blogContent").value;
-            const coverImageInput = document.getElementById("coverImage");
+function saveBlogPost() {
+    let blogs = JSON.parse(localStorage.getItem("savedBlogs") || "[]");
+    const title = document.getElementById("blogTitle").value;
+    const content = document.getElementById("blogContent").value;
+    const coverImage = document.getElementById("blog-image-preview").getAttribute("data-url");
 
-            if (!title || !content) {
-                alert("Title and Content are required!");
-                return;
-            }
+    if (!title || !content) {
+        alert("Title and Content are required!");
+        return;
+    }
 
-            const formData = new FormData();
-            formData.append("title", title);
-            formData.append("content", content);
+    const newBlog = { id: Date.now(), title, content, coverImage };
+    blogs.push(newBlog);
+    localStorage.setItem("savedBlogs", JSON.stringify(blogs));
 
-            if (coverImageInput.files.length > 0) {
-                formData.append("coverImage", coverImageInput.files[0]);
-            }
+    alert("Blog saved!");
+    window.location.reload();
+}
+
 
             const response = await fetch("http://localhost:5000/api/blogs", {
                 method: "POST",
